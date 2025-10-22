@@ -504,7 +504,9 @@ export default {
 </script>
 
 <style scoped>
+/* #ifndef MP-WEIXIN */
 @import url('@/common/styles/common.css');
+/* #endif */
 
 /* 打卡状态样式 */
 .clock-status {
@@ -547,4 +549,17 @@ export default {
   font-weight: 600;
   color: var(--primary-color);
 }
+
+/* #ifdef MP-WEIXIN */
+/* WXSS 安全样式（避免使用 CSS 变量） */
+.status-text { color: #1a1a1a; }
+.status-time { color: #666666; }
+.work-duration { margin-bottom: 32rpx; padding: 24rpx; background: #f8f9fa; border-radius: 12rpx; text-align: center; }
+.duration-label { color: #666666; }
+.duration-time { color: #007aff; }
+.btn { display: flex; align-items: center; justify-content: center; border: none; border-radius: 12rpx; font-size: 28rpx; }
+.btn-large { height: 88rpx; font-size: 32rpx; border-radius: 44rpx; }
+.btn-primary { background: #007aff; color: #ffffff; }
+.btn-error { background: #ff3b30; color: #ffffff; }
+/* #endif */
 </style>

@@ -103,7 +103,9 @@ export default {
 </script>
 
 <style scoped>
+/* #ifndef MP-WEIXIN */
 @import url('@/common/styles/common.css');
+/* #endif */
 
 /* 登录页面特殊样式 */
 .page {
@@ -174,5 +176,21 @@ export default {
   line-height: 1.6;
   margin-bottom: 10rpx;
 }
+
+/* #ifdef MP-WEIXIN */
+/* WXSS 安全样式（不使用 * 通配选择器与 CSS 变量） */
+.page { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40rpx; }
+.page-content { width: 100%; max-width: 600rpx; }
+.btn { display: flex; align-items: center; justify-content: center; border: none; border-radius: 12rpx; font-size: 28rpx; }
+.btn-large { height: 88rpx; font-size: 32rpx; border-radius: 44rpx; }
+.btn-primary { background: #007aff; color: #ffffff; }
+.logo-section { text-align: center; margin-bottom: 60rpx; }
+.logo { width: 120rpx; height: 120rpx; margin-bottom: 30rpx; }
+.app-name { color: #1a1a1a; }
+.app-desc { color: #666666; }
+.tips-section { background: #f8f9fa; border-radius: 16rpx; padding: 32rpx; }
+.tips-title { color: #1a1a1a; }
+.tip-item { color: #666666; }
+/* #endif */
 
 </style>
