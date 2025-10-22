@@ -1,34 +1,30 @@
 <template>
-  <view class="init-page">
-    <view class="init-container">
-      <view class="header">
-        <text class="title">系统初始化</text>
-        <text class="subtitle">首次使用需要设置超级管理员</text>
+  <view class="page">
+    <view class="header">
+      <text class="title">系统初始化</text>
+    </view>
+    
+    <view class="content">
+      <view class="init-card">
+        <text class="card-title">超级管理员权限</text>
+        <view class="permission-list">
+          <text class="permission-item">• 系统最高权限</text>
+          <text class="permission-item">• 可指定管理员</text>
+          <text class="permission-item">• 可管理所有组织</text>
+          <text class="permission-item">• 可查看所有数据</text>
+          <text class="permission-item">• 可进行系统设置</text>
+        </view>
       </view>
       
-      <view class="content">
-        <view class="info-card">
-          <text class="card-title">超级管理员权限</text>
-          <view class="permission-list">
-            <text class="permission-item">• 系统最高权限</text>
-            <text class="permission-item">• 可指定管理员</text>
-            <text class="permission-item">• 可管理所有组织</text>
-            <text class="permission-item">• 可查看所有数据</text>
-            <text class="permission-item">• 可进行系统设置</text>
-          </view>
-        </view>
-        
-        <view class="warning-card">
-          <text class="warning-icon">⚠️</text>
-          <text class="warning-text">请确保您有权限成为超级管理员，此操作不可撤销</text>
-        </view>
-        
-        <view class="user-info">
-          <image :src="userInfo.avatarUrl" class="avatar" mode="aspectFill" />
-          <view class="user-details">
-            <text class="user-name">{{ userInfo.nickName }}</text>
-            <text class="user-desc">将获得超级管理员权限</text>
-          </view>
+      <view class="warning-card">
+        <text class="warning-text">请确保您有权限成为超级管理员，此操作不可撤销</text>
+      </view>
+      
+      <view class="user-info">
+        <image :src="userInfo.avatarUrl" class="avatar" mode="aspectFill" />
+        <view class="user-details">
+          <text class="user-name">{{ userInfo.nickName }}</text>
+          <text class="user-desc">将获得超级管理员权限</text>
         </view>
       </view>
       
@@ -36,7 +32,6 @@
         <button 
           class="init-btn" 
           @click="initSuperAdmin"
-          :loading="initializing"
           :disabled="initializing"
         >
           {{ initializing ? '初始化中...' : '确认成为超级管理员' }}
@@ -71,7 +66,8 @@ export default {
   },
   
   onLoad() {
-    this.getUserInfo()
+    // 不在页面加载时自动获取用户信息
+    // 等待用户点击按钮时再获取
   },
   
   methods: {
@@ -109,11 +105,14 @@ export default {
           throw new Error(loginRes.errMsg || '微信登录失败')
         }
         
-        // 获取用户信息
+        // 获取用户信息（在用户点击时调用）
         const userInfoRes = await this.getWxUserInfo()
         if (!userInfoRes.userInfo) {
           throw new Error('获取用户信息失败')
         }
+        
+        // 更新用户信息显示
+        this.userInfo = userInfoRes.userInfo
         
         // 先进行简化登录
         const loginResult = await uniCloud.callFunction({

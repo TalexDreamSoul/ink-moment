@@ -221,32 +221,11 @@ export default {
       try {
         uni.showLoading({ title: '加载中...' })
         
-        const result = await uniCloud.callFunction({
-          name: 'user-auth-simple',
-          data: {
-            action: 'getUserProfile'
-          }
-        })
-        
-        if (result.result.code === 0) {
-          this.formData = { 
-            ...this.formData,
-            ...result.result.data,
-            meta: {
-              ...this.formData.meta,
-              ...(result.result.data.meta || {})
-            }
-          }
-          if (this.formData.college && !this.colleges.find(c => c.value === this.formData.college)) {
-            this.customCollege = this.formData.college
-            this.showCustomCollege = true
-            this.formData.college = 'other'
-          }
-        } else {
-          uni.showToast({
-            title: result.result.message,
-            icon: 'none'
-          })
+        // 从本地存储获取用户信息
+        const userInfo = uni.getStorageSync('userInfo')
+        if (userInfo) {
+          this.formData.name = userInfo.nickName || ''
+          this.formData.meta.avatar = userInfo.avatarUrl || ''
         }
       } catch (error) {
         console.error('loadUserProfile error:', error)
@@ -279,32 +258,26 @@ export default {
         
         this.submitting = true
         
-        const result = await uniCloud.callFunction({
-          name: 'user-auth-simple',
-          data: {
-            action: 'updateUserProfile',
-            profileData: this.formData
-          }
+        // 保存用户信息到本地存储
+        const userProfile = {
+          ...this.formData,
+          is_completed: true,
+          updated_at: new Date().toISOString()
+        }
+        
+        uni.setStorageSync('userProfile', userProfile)
+        
+        uni.showToast({
+          title: '信息提交成功',
+          icon: 'success'
         })
         
-        if (result.result.code === 0) {
-          uni.showToast({
-            title: '信息提交成功',
-            icon: 'success'
+        // 延迟跳转到主页
+        setTimeout(() => {
+          uni.reLaunch({
+            url: '/pages/home/index'
           })
-          
-          // 延迟跳转到主页
-          setTimeout(() => {
-            uni.reLaunch({
-              url: '/pages/home/index'
-            })
-          }, 1500)
-        } else {
-          uni.showToast({
-            title: result.result.message,
-            icon: 'none'
-          })
-        }
+        }, 1500)
       } catch (error) {
         console.error('submitForm error:', error)
         if (error.message) {

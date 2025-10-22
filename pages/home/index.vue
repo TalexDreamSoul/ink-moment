@@ -1,64 +1,67 @@
+
 <template>
   <view class="home-page">
     <!-- 未登录状态 -->
-    <view v-if="!isLoggedIn" class="login-prompt" @click="goToLogin">
-      <view class="prompt-content">
-        <text class="prompt-icon">👋</text>
-        <text class="prompt-title">欢迎使用溯间砚时</text>
-        <text class="prompt-desc">点击任意位置开始授权登录</text>
-        <text class="prompt-tip">首次使用需要完善个人信息</text>
+    <view v-if="!isLoggedIn" class="page">
+      <view class="header">
+        <text class="title">溯间砚时</text>
+      </view>
+      
+      <view class="content">
+        <view class="empty-state">
+          <text class="empty-text">欢迎使用溯间砚时</text>
+          <text class="empty-desc">点击下方按钮开始授权登录</text>
+          <button class="btn" @click="goToLogin">开始登录</button>
+        </view>
       </view>
     </view>
     
     <!-- 已登录但信息不完整 -->
-    <view v-else-if="!userProfile || !userProfile.is_completed" class="profile-prompt" @click="goToProfile">
-      <view class="prompt-content">
-        <text class="prompt-icon">📝</text>
-        <text class="prompt-title">完善个人信息</text>
-        <text class="prompt-desc">请完善您的个人信息以开始使用</text>
-        <text class="prompt-tip">点击任意位置进入信息填写</text>
+    <view v-else-if="!userProfile || !userProfile.is_completed" class="page">
+      <view class="header">
+        <text class="title">完善个人信息</text>
+      </view>
+      
+      <view class="content">
+        <view class="empty-state">
+          <text class="empty-text">请完善您的个人信息</text>
+          <text class="empty-desc">首次使用需要填写基本信息</text>
+          <button class="btn" @click="goToProfile">填写信息</button>
+        </view>
       </view>
     </view>
     
     <!-- 已登录且信息完整 -->
-    <view v-else class="main-content">
-      <!-- 用户信息区域 -->
-      <view class="user-info">
-        <view class="welcome-text">
-          <text class="welcome-title">欢迎回来</text>
-          <text class="user-name">{{ userProfile.name }}</text>
-        </view>
-        <view class="user-avatar" @click="goToProfile">
-          <image 
-            :src="userProfile.meta?.avatar || '/static/userImg/user.png'" 
-            class="avatar-img"
-            mode="aspectFill"
-          />
-        </view>
+    <view v-else class="page">
+      <view class="header">
+        <text class="title">欢迎回来，{{ userProfile.name }}</text>
       </view>
       
-      <!-- 打卡状态区域 -->
-      <view class="clock-section">
-        <view class="clock-status">
-          <text class="status-text">{{ clockStatus.text }}</text>
-          <text class="status-time" v-if="currentRecord">{{ formatTime(currentRecord.clock_in_time) }}</text>
+      <view class="content">
+      
+        <!-- 打卡状态区域 -->
+        <view class="clock-section">
+          <view class="clock-status">
+            <text class="status-text">{{ clockStatus.text }}</text>
+            <text class="status-time" v-if="currentRecord">{{ formatTime(currentRecord.clock_in_time) }}</text>
+          </view>
+          
+          <!-- 工作时长显示 -->
+          <view class="work-duration" v-if="currentRecord">
+            <text class="duration-label">已工作时长</text>
+            <text class="duration-time">{{ formatDuration(workDuration) }}</text>
+          </view>
+          
+          <!-- 打卡按钮 -->
+          <button 
+            class="clock-btn" 
+            :class="clockStatus.class"
+            @click="handleClock"
+            :disabled="clocking"
+          >
+            <text class="btn-text">{{ clockStatus.buttonText }}</text>
+          </button>
         </view>
-        
-        <!-- 工作时长显示 -->
-        <view class="work-duration" v-if="currentRecord">
-          <text class="duration-label">已工作时长</text>
-          <text class="duration-time">{{ formatDuration(workDuration) }}</text>
-        </view>
-        
-        <!-- 打卡按钮 -->
-        <button 
-          class="clock-btn" 
-          :class="clockStatus.class"
-          @click="handleClock"
-          :disabled="clocking"
-        >
-          <text class="btn-text">{{ clockStatus.buttonText }}</text>
-        </button>
       </view>
       
       <!-- 今日统计 -->
@@ -103,8 +106,8 @@
           <text class="admin-text">🔧 管理员入口</text>
         </button>
       </view>
+    </view>view>
     </view>
-  </view>
 </template>
 
 <script>
@@ -151,7 +154,8 @@ export default {
   },
   
   onLoad() {
-    this.checkSystemStatus()
+    // 直接检查登录状态，不进行系统检查
+    this.checkLoginStatus()
   },
   
   onShow() {
@@ -184,13 +188,9 @@ export default {
           })
           return
         }
-        
-        // 有超级管理员，继续检查登录状态
-        await this.checkLoginStatus()
       } catch (error) {
         console.error('checkSystemStatus error:', error)
-        // 系统检查失败，继续检查登录状态
-        await this.checkLoginStatus()
+        // 系统检查失败，继续正常流程
       }
     },
     
@@ -198,8 +198,9 @@ export default {
       try {
         const uid = uni.getStorageSync('uid')
         const token = uni.getStorageSync('token')
+        const isLoggedIn = uni.getStorageSync('isLoggedIn')
         
-        if (uid && token) {
+        if (uid && token && isLoggedIn) {
           this.isLoggedIn = true
           await this.loadUserData()
         } else {
@@ -213,16 +214,16 @@ export default {
     
     async loadUserData() {
       try {
-        // 加载用户信息
-        const profileResult = await uniCloud.callFunction({
-          name: 'user-auth-simple',
-          data: {
-            action: 'getUserProfile'
-          }
-        })
+        // 从本地存储获取用户信息
+        const userInfo = uni.getStorageSync('userInfo')
+        const userProfile = uni.getStorageSync('userProfile')
         
-        if (profileResult.result.code === 0) {
-          this.userProfile = profileResult.result.data
+        if (userInfo) {
+          this.userProfile = {
+            name: userInfo.nickName,
+            avatar: userInfo.avatarUrl,
+            is_completed: userProfile ? userProfile.is_completed : false
+          }
         }
         
         // 检查管理员权限
@@ -497,121 +498,80 @@ export default {
 </script>
 
 <style scoped>
-.home-page {
+.page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40rpx 30rpx;
+  background: #fff;
+  padding-top: var(--status-bar-height);
 }
 
-.login-prompt, .profile-prompt {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx;
+.header {
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #e5e5e5;
 }
 
-.prompt-content {
+.title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.content {
+  padding: 40rpx 24rpx;
+}
+
+.empty-state {
   text-align: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 30rpx;
-  padding: 80rpx 60rpx;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.1);
+  padding: 80rpx 0;
 }
 
-.prompt-icon {
-  display: block;
-  font-size: 120rpx;
-  margin-bottom: 40rpx;
-}
-
-.prompt-title {
-  display: block;
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20rpx;
-}
-
-.prompt-desc {
+.empty-text {
   display: block;
   font-size: 32rpx;
-  color: #666;
-  margin-bottom: 20rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
 }
 
-.prompt-tip {
-  display: block;
-  font-size: 26rpx;
-  color: #999;
-}
-
-.main-content {
-  min-height: 100vh;
-}
-
-.user-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  padding: 40rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-}
-
-.welcome-text {
-  flex: 1;
-}
-
-.welcome-title {
+.empty-desc {
   display: block;
   font-size: 28rpx;
   color: #666;
-  margin-bottom: 10rpx;
+  margin-bottom: 32rpx;
 }
 
-.user-name {
-  display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-}
-
-.user-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 4rpx solid #fff;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
+.btn {
+  width: 200rpx;
+  height: 64rpx;
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 
 .clock-section {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  padding: 40rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border: 1rpx solid #e5e5e5;
+  border-radius: 8rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
   text-align: center;
 }
 
 .clock-status {
-  margin-bottom: 30rpx;
+  margin-bottom: 24rpx;
 }
 
 .status-text {
   display: block;
   font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
 }
 
 .status-time {
@@ -621,51 +581,49 @@ export default {
 }
 
 .work-duration {
-  margin-bottom: 40rpx;
-  padding: 20rpx;
+  margin-bottom: 32rpx;
+  padding: 24rpx;
   background: #f8f9fa;
-  border-radius: 15rpx;
+  border-radius: 8rpx;
 }
 
 .duration-label {
   display: block;
   font-size: 24rpx;
   color: #666;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
 }
 
 .duration-time {
   display: block;
   font-size: 48rpx;
-  font-weight: bold;
-  color: #667eea;
+  font-weight: 600;
+  color: #007aff;
 }
 
 .clock-btn {
   width: 100%;
-  height: 88rpx;
+  height: 80rpx;
   border: none;
-  border-radius: 44rpx;
+  border-radius: 8rpx;
   font-size: 32rpx;
-  font-weight: bold;
+  font-weight: 600;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.2);
 }
 
 .clock-btn.clock-in {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #007aff;
 }
 
 .clock-btn.clock-out {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  background: #ff3b30;
 }
 
 .clock-btn:disabled {
   background: #ccc;
-  box-shadow: none;
 }
 
 .today-stats {

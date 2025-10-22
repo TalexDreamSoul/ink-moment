@@ -1,28 +1,14 @@
 <script>
-  import checkUpdate from '@/uni_modules/uni-upgrade-center-app/utils/check-update';
-  import { systemStartupCheck } from '@/utils/system-check.js';
+import checkUpdate from '@/uni_modules/uni-upgrade-center-app/utils/check-update';
   
   export default {
-    onLaunch: async function() {
-      console.log('App Launch')
-		// #ifdef MP-WEIXIN
-		uniCloud.initSecureNetworkByWeixin()
-		// #endif
-      checkUpdate() //更新升级
-      
-      // 系统启动检查
-      try {
-        const checkResult = await systemStartupCheck()
-        if (checkResult.needInit) {
-          // 需要初始化超级管理员
-          uni.reLaunch({
-            url: '/pages/admin/init-super-admin'
-          })
-        }
-      } catch (error) {
-        console.error('App launch system check error:', error)
-      }
-    },
+  onLaunch: async function() {
+    console.log('App Launch')
+    // #ifdef MP-WEIXIN
+    uniCloud.initSecureNetworkByWeixin()
+    // #endif
+    checkUpdate() //更新升级
+  },
     mounted() {
       // #ifdef H5
       //const VConsole = require('@/common/js/vconsole.min.js')

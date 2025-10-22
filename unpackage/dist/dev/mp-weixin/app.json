@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/welcome/index",
     "pages/home/index",
     "pages/auth/login",
     "pages/auth/profile-edit",
@@ -87,5 +88,11 @@
   "requiredPrivateInfos": [
     "getLocation"
   ],
+  "oauth": {
+    "weixin": {
+      "appid": "wx0a9c4d5b8cac1bc1",
+      "secret": "YOUR_WECHAT_SECRET"
+    }
+  },
   "usingComponents": {}
 }

@@ -1,11 +1,14 @@
 <template>
-  <view class="org-list-page">
+  <view class="page">
     <view class="header">
       <text class="title">我的组织</text>
     </view>
     
     <view class="content">
-      <text class="placeholder">组织列表功能开发中...</text>
+      <view class="empty-state">
+        <text class="empty-text">组织列表功能开发中</text>
+        <button class="btn" @click="handleClick">刷新</button>
+      </view>
     </view>
   </view>
 </template>
@@ -17,33 +20,63 @@ export default {
     return {
       
     }
+  },
+  methods: {
+    handleClick() {
+      uni.showToast({
+        title: '功能开发中',
+        icon: 'none'
+      })
+    }
   }
 }
 </script>
 
 <style scoped>
-.org-list-page {
-  padding: 20rpx;
+.page {
+  min-height: 100vh;
+  background: #fff;
+  padding-top: var(--status-bar-height);
 }
 
 .header {
-  text-align: center;
-  margin-bottom: 40rpx;
+  padding: 32rpx 24rpx;
+  border-bottom: 1rpx solid #e5e5e5;
 }
 
 .title {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .content {
-  text-align: center;
-  padding: 100rpx 0;
+  padding: 40rpx 24rpx;
 }
 
-.placeholder {
+.empty-state {
+  text-align: center;
+  padding: 80rpx 0;
+}
+
+.empty-text {
+  display: block;
   font-size: 28rpx;
   color: #666;
+  margin-bottom: 32rpx;
+}
+
+.btn {
+  width: 160rpx;
+  height: 64rpx;
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
 </style>

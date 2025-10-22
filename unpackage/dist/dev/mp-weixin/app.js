@@ -1,12 +1,45 @@
 "use strict";
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("./common/vendor.js");
-const utils_systemCheck = require("./utils/system-check.js");
 if (!Math) {
+  "./pages/welcome/index.js";
   "./pages/home/index.js";
   "./pages/auth/login.js";
   "./pages/auth/profile-edit.js";
+  "./pages/work/records.js";
+  "./pages/work/detail.js";
+  "./pages/volunteer/statistics.js";
+  "./pages/volunteer/export.js";
+  "./pages/organization/list.js";
+  "./pages/organization/join.js";
+  "./pages/organization/detail.js";
+  "./pages/organization/create.js";
+  "./pages/supervisor/audit-list.js";
+  "./pages/supervisor/audit-detail.js";
+  "./pages/supervisor/statistics.js";
+  "./pages/admin/home.js";
+  "./pages/admin/org-manage.js";
+  "./pages/admin/member-manage.js";
+  "./pages/admin/supervisor-assign.js";
+  "./pages/admin/invite-admin.js";
   "./pages/admin/init-super-admin.js";
+  "./pages/invitation/create.js";
+  "./pages/invitation/scan.js";
+  "./pages/invitation/detail.js";
+  "./pages/invitation/list.js";
+  "./pages/notification/list.js";
+  "./pages/notification/detail.js";
+  "./pages/notification/settings.js";
+  "./pages/feedback/create.js";
+  "./pages/feedback/list.js";
+  "./pages/feedback/detail.js";
+  "./pages/statistics/charts.js";
+  "./pages/statistics/export.js";
+  "./pages/statistics/settings.js";
+  "./pages/reminder/settings.js";
+  "./pages/reminder/history.js";
+  "./pages/verify/check.js";
+  "./pages/profile/index.js";
   "./pages/home/home.js";
   "./pages/cloudFunction/cloudFunction.js";
   "./pages/cloudObject/cloudObject.js";
@@ -45,26 +78,16 @@ if (!Math) {
 }
 const _sfc_main = {
   onLaunch: async function() {
-    common_vendor.index.__f__("log", "at App.vue:7", "App Launch");
+    common_vendor.index.__f__("log", "at App.vue:6", "App Launch");
     common_vendor.tr.initSecureNetworkByWeixin();
-    try {
-      const checkResult = await utils_systemCheck.systemStartupCheck();
-      if (checkResult.needInit) {
-        common_vendor.index.reLaunch({
-          url: "/pages/admin/init-super-admin"
-        });
-      }
-    } catch (error) {
-      common_vendor.index.__f__("error", "at App.vue:23", "App launch system check error:", error);
-    }
   },
   mounted() {
   },
   onShow: function() {
-    common_vendor.index.__f__("log", "at App.vue:33", "App Show");
+    common_vendor.index.__f__("log", "at App.vue:19", "App Show");
   },
   onHide: function() {
-    common_vendor.index.__f__("log", "at App.vue:36", "App Hide");
+    common_vendor.index.__f__("log", "at App.vue:22", "App Hide");
   }
 };
 function createApp() {

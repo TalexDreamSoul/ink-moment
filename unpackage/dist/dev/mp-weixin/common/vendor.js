@@ -7365,7 +7365,7 @@ function isConsoleWritable() {
 function initRuntimeSocketService() {
   const hosts = "127.0.0.1,172.20.10.7,198.18.0.1";
   const port = "8090";
-  const id = "mp-weixin_3YHv_0";
+  const id = "mp-weixin_ChNI-0";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8312,6 +8312,14 @@ const createSubpackageApp = initCreateSubpackageApp();
   wx.createSubpackageApp = global.createSubpackageApp = createSubpackageApp;
 }
 const pages = [
+  {
+    path: "pages/welcome/index",
+    style: {
+      navigationBarTitleText: "欢迎使用",
+      enablePullDownRefresh: false,
+      navigationStyle: "custom"
+    }
+  },
   {
     path: "pages/home/index",
     style: {
