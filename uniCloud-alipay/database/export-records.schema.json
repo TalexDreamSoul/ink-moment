@@ -1,0 +1,64 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "export_type", "total_minutes", "verify_code"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID(可为空,全部组织)",
+      "foreignKey": "organizations._id"
+    },
+    "export_type": {
+      "bsonType": "string",
+      "description": "导出类型",
+      "enum": ["poster", "pdf"]
+    },
+    "start_date": {
+      "bsonType": "timestamp",
+      "description": "开始日期"
+    },
+    "end_date": {
+      "bsonType": "timestamp",
+      "description": "结束日期"
+    },
+    "total_minutes": {
+      "bsonType": "int",
+      "description": "总时长(分钟)",
+      "minimum": 0
+    },
+    "qrcode": {
+      "bsonType": "string",
+      "description": "二维码内容"
+    },
+    "verify_code": {
+      "bsonType": "string",
+      "description": "验证码(6位随机)",
+      "minLength": 6,
+      "maxLength": 6
+    },
+    "file_url": {
+      "bsonType": "string",
+      "description": "文件地址(pdf)"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "导出时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid",
+    "create": "auth.uid != null && doc.user_id == auth.uid",
+    "update": false,
+    "delete": false
+  }
+}

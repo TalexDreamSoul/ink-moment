@@ -84,7 +84,15 @@
             "urlCheck" : false,
             "minified" : true
         },
-        "usingComponents" : true
+        "usingComponents" : true,
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "您的位置信息将用于打卡定位"
+            }
+        },
+        "requiredPrivateInfos" : [
+            "getLocation"
+        ]
     },
     "h5" : {
         "template" : "template.h5.html",

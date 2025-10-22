@@ -1,0 +1,53 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "org_id", "date", "total_minutes"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID",
+      "foreignKey": "organizations._id"
+    },
+    "date": {
+      "bsonType": "timestamp",
+      "description": "统计日期"
+    },
+    "total_minutes": {
+      "bsonType": "int",
+      "description": "总时长(分钟)",
+      "minimum": 0
+    },
+    "record_count": {
+      "bsonType": "int",
+      "description": "记录数量",
+      "minimum": 0
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "create": "auth.uid != null",
+    "update": "auth.uid != null",
+    "delete": false
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "type", "content", "status"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "反馈用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "type": {
+      "bsonType": "string",
+      "description": "反馈类型",
+      "enum": ["bug", "suggestion", "complaint", "praise"]
+    },
+    "content": {
+      "bsonType": "string",
+      "description": "反馈内容",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "images": {
+      "bsonType": "array",
+      "description": "反馈图片",
+      "items": {
+        "bsonType": "string"
+      }
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "处理状态",
+      "enum": ["pending", "processing", "resolved", "closed"],
+      "defaultValue": "pending"
+    },
+    "reply": {
+      "bsonType": "string",
+      "description": "回复内容",
+      "maxLength": 1000
+    },
+    "replied_by": {
+      "bsonType": "string",
+      "description": "回复人ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "replied_at": {
+      "bsonType": "timestamp",
+      "description": "回复时间"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid || get('system_roles').where('user_id == auth.uid && role in [\"super_admin\", \"admin\"]').count() > 0",
+    "create": "auth.uid != null && doc.user_id == auth.uid",
+    "update": "get('system_roles').where('user_id == auth.uid && role in [\"super_admin\", \"admin\"]').count() > 0",
+    "delete": "get('system_roles').where('user_id == auth.uid && role in [\"super_admin\", \"admin\"]').count() > 0"
+  }
+}

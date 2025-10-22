@@ -1,0 +1,56 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "type", "title", "content", "status"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "接收用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "type": {
+      "bsonType": "string",
+      "description": "通知类型",
+      "enum": ["audit_result", "invitation", "system", "reminder"]
+    },
+    "title": {
+      "bsonType": "string",
+      "description": "通知标题",
+      "maxLength": 100
+    },
+    "content": {
+      "bsonType": "string",
+      "description": "通知内容",
+      "maxLength": 500
+    },
+    "related_id": {
+      "bsonType": "string",
+      "description": "关联记录ID"
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "状态",
+      "enum": ["unread", "read"],
+      "defaultValue": "unread"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "read_at": {
+      "bsonType": "timestamp",
+      "description": "阅读时间"
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid",
+    "create": "auth.uid != null",
+    "update": "doc.user_id == auth.uid",
+    "delete": "doc.user_id == auth.uid"
+  }
+}

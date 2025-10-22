@@ -1,0 +1,58 @@
+{
+  "bsonType": "object",
+  "required": ["record_id", "user_id", "org_id", "auditor_id", "original_minutes", "adjusted_minutes", "reason"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "record_id": {
+      "bsonType": "string",
+      "description": "打卡记录ID",
+      "foreignKey": "work_records._id"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "被调整用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID",
+      "foreignKey": "organizations._id"
+    },
+    "auditor_id": {
+      "bsonType": "string",
+      "description": "调整人(督导)ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "original_minutes": {
+      "bsonType": "int",
+      "description": "原时长(分钟)",
+      "minimum": 0
+    },
+    "adjusted_minutes": {
+      "bsonType": "int",
+      "description": "调整后时长(分钟)",
+      "minimum": 0
+    },
+    "reason": {
+      "bsonType": "string",
+      "description": "调整原因",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "adjusted_at": {
+      "bsonType": "timestamp",
+      "description": "调整时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "create": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "update": false,
+    "delete": false
+  }
+}

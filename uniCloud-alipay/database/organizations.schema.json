@@ -1,0 +1,77 @@
+{
+  "bsonType": "object",
+  "required": ["name", "admin_id"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "name": {
+      "bsonType": "string",
+      "description": "组织名称",
+      "title": "组织名称",
+      "minLength": 1,
+      "maxLength": 50
+    },
+    "description": {
+      "bsonType": "string",
+      "description": "组织描述",
+      "title": "组织描述",
+      "maxLength": 200
+    },
+    "admin_id": {
+      "bsonType": "string",
+      "description": "创建者(管理员)ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "qrcode_key": {
+      "bsonType": "string",
+      "description": "组织加入二维码key",
+      "title": "二维码key"
+    },
+    "location": {
+      "bsonType": "object",
+      "description": "定位信息",
+      "properties": {
+        "latitude": {
+          "bsonType": "double",
+          "description": "纬度"
+        },
+        "longitude": {
+          "bsonType": "double",
+          "description": "经度"
+        },
+        "radius": {
+          "bsonType": "int",
+          "description": "打卡范围(米)",
+          "defaultValue": 1000
+        }
+      }
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "状态",
+      "enum": ["active", "inactive"],
+      "defaultValue": "active"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "updated_at": {
+      "bsonType": "timestamp",
+      "description": "更新时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "auth.uid != null",
+    "update": "doc.admin_id == auth.uid || get('system_roles').where('user_id == auth.uid && role in [\"super_admin\", \"admin\"]').count() > 0",
+    "delete": "doc.admin_id == auth.uid || get('system_roles').where('user_id == auth.uid && role == \"super_admin\"').count() > 0"
+  }
+}

@@ -1,7 +1,12 @@
 "use strict";
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("./common/vendor.js");
+const utils_systemCheck = require("./utils/system-check.js");
 if (!Math) {
+  "./pages/home/index.js";
+  "./pages/auth/login.js";
+  "./pages/auth/profile-edit.js";
+  "./pages/admin/init-super-admin.js";
   "./pages/home/home.js";
   "./pages/cloudFunction/cloudFunction.js";
   "./pages/cloudObject/cloudObject.js";
@@ -40,16 +45,26 @@ if (!Math) {
 }
 const _sfc_main = {
   onLaunch: async function() {
-    common_vendor.index.__f__("log", "at App.vue:5", "App Launch");
+    common_vendor.index.__f__("log", "at App.vue:7", "App Launch");
     common_vendor.tr.initSecureNetworkByWeixin();
+    try {
+      const checkResult = await utils_systemCheck.systemStartupCheck();
+      if (checkResult.needInit) {
+        common_vendor.index.reLaunch({
+          url: "/pages/admin/init-super-admin"
+        });
+      }
+    } catch (error) {
+      common_vendor.index.__f__("error", "at App.vue:23", "App launch system check error:", error);
+    }
   },
   mounted() {
   },
   onShow: function() {
-    common_vendor.index.__f__("log", "at App.vue:18", "App Show");
+    common_vendor.index.__f__("log", "at App.vue:33", "App Show");
   },
   onHide: function() {
-    common_vendor.index.__f__("log", "at App.vue:21", "App Hide");
+    common_vendor.index.__f__("log", "at App.vue:36", "App Hide");
   }
 };
 function createApp() {

@@ -1,5 +1,42 @@
 {
   "pages": [
+    "pages/home/index",
+    "pages/auth/login",
+    "pages/auth/profile-edit",
+    "pages/work/records",
+    "pages/work/detail",
+    "pages/volunteer/statistics",
+    "pages/volunteer/export",
+    "pages/organization/list",
+    "pages/organization/join",
+    "pages/organization/detail",
+    "pages/organization/create",
+    "pages/supervisor/audit-list",
+    "pages/supervisor/audit-detail",
+    "pages/supervisor/statistics",
+    "pages/admin/home",
+    "pages/admin/org-manage",
+    "pages/admin/member-manage",
+    "pages/admin/supervisor-assign",
+    "pages/admin/invite-admin",
+    "pages/admin/init-super-admin",
+    "pages/invitation/create",
+    "pages/invitation/scan",
+    "pages/invitation/detail",
+    "pages/invitation/list",
+    "pages/notification/list",
+    "pages/notification/detail",
+    "pages/notification/settings",
+    "pages/feedback/create",
+    "pages/feedback/list",
+    "pages/feedback/detail",
+    "pages/statistics/charts",
+    "pages/statistics/export",
+    "pages/statistics/settings",
+    "pages/reminder/settings",
+    "pages/reminder/history",
+    "pages/verify/check",
+    "pages/profile/index",
     "pages/home/home",
     "pages/cloudFunction/cloudFunction",
     "pages/cloudObject/cloudObject",
@@ -42,5 +79,13 @@
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "您的位置信息将用于打卡定位"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation"
+  ],
   "usingComponents": {}
 }

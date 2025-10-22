@@ -1,0 +1,102 @@
+{
+  "bsonType": "object",
+  "required": ["user_id", "org_id", "clock_in_time", "clock_in_location"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID",
+      "foreignKey": "organizations._id"
+    },
+    "clock_in_time": {
+      "bsonType": "timestamp",
+      "description": "上班时间"
+    },
+    "clock_in_location": {
+      "bsonType": "object",
+      "description": "上班定位信息",
+      "properties": {
+        "latitude": {
+          "bsonType": "double",
+          "description": "纬度"
+        },
+        "longitude": {
+          "bsonType": "double",
+          "description": "经度"
+        },
+        "address": {
+          "bsonType": "string",
+          "description": "详细地址"
+        }
+      }
+    },
+    "clock_out_time": {
+      "bsonType": "timestamp",
+      "description": "下班时间"
+    },
+    "clock_out_location": {
+      "bsonType": "object",
+      "description": "下班定位信息",
+      "properties": {
+        "latitude": {
+          "bsonType": "double",
+          "description": "纬度"
+        },
+        "longitude": {
+          "bsonType": "double",
+          "description": "经度"
+        },
+        "address": {
+          "bsonType": "string",
+          "description": "详细地址"
+        }
+      }
+    },
+    "duration_minutes": {
+      "bsonType": "int",
+      "description": "工作时长(分钟)",
+      "minimum": 0
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "状态",
+      "enum": ["ongoing", "completed", "pending", "approved", "rejected"],
+      "defaultValue": "ongoing"
+    },
+    "audit_status": {
+      "bsonType": "string",
+      "description": "审核状态",
+      "enum": ["pending", "approved", "rejected"],
+      "defaultValue": "pending"
+    },
+    "auditor_id": {
+      "bsonType": "string",
+      "description": "审核人ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "audited_at": {
+      "bsonType": "timestamp",
+      "description": "审核时间"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "create": "auth.uid != null && doc.user_id == auth.uid",
+    "update": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "delete": false
+  }
+}

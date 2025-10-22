@@ -1,0 +1,7 @@
+{
+  "name": "user-auth-simple",
+  "version": "1.0.0",
+  "description": "简化版用户授权登录云函数",
+  "main": "index.js",
+  "dependencies": {}
+}

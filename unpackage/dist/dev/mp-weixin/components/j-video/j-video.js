@@ -83,7 +83,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     a: $props.width,
     b: $props.height,
     c: $options.posterUrl,
-    d: common_assets._imports_0$3,
+    d: common_assets._imports_0$4,
     e: $props.width,
     f: $props.height,
     g: common_vendor.o((...args) => $options.play && $options.play(...args)),

@@ -1,0 +1,80 @@
+{
+  "bsonType": "object",
+  "required": ["org_id", "inviter_id", "invitee_info", "invite_code", "status"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID",
+      "foreignKey": "organizations._id"
+    },
+    "inviter_id": {
+      "bsonType": "string",
+      "description": "邀请人ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "invitee_info": {
+      "bsonType": "object",
+      "description": "被邀请人信息",
+      "properties": {
+        "name": {
+          "bsonType": "string",
+          "description": "姓名"
+        },
+        "student_id": {
+          "bsonType": "string",
+          "description": "学号"
+        },
+        "phone": {
+          "bsonType": "string",
+          "description": "联系方式"
+        },
+        "college": {
+          "bsonType": "string",
+          "description": "学院"
+        }
+      }
+    },
+    "invite_code": {
+      "bsonType": "string",
+      "description": "邀请码(唯一)",
+      "minLength": 8,
+      "maxLength": 8
+    },
+    "role": {
+      "bsonType": "string",
+      "description": "邀请角色",
+      "enum": ["user", "supervisor"],
+      "defaultValue": "user"
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "邀请状态",
+      "enum": ["pending", "accepted", "rejected", "expired"],
+      "defaultValue": "pending"
+    },
+    "accepted_at": {
+      "bsonType": "timestamp",
+      "description": "接受时间"
+    },
+    "expires_at": {
+      "bsonType": "timestamp",
+      "description": "过期时间"
+    },
+    "created_at": {
+      "bsonType": "timestamp",
+      "description": "创建时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  },
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "update": "doc.inviter_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "delete": "doc.inviter_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "bsonType": "object",
+  "required": ["org_id", "user_id", "role"],
+  "properties": {
+    "_id": {
+      "description": "ID，系统自动生成"
+    },
+    "org_id": {
+      "bsonType": "string",
+      "description": "组织ID",
+      "foreignKey": "organizations._id"
+    },
+    "user_id": {
+      "bsonType": "string",
+      "description": "用户ID",
+      "foreignKey": "uni-id-users._id"
+    },
+    "role": {
+      "bsonType": "string",
+      "description": "角色",
+      "enum": ["admin", "supervisor", "user"],
+      "defaultValue": "user"
+    },
+    "joined_at": {
+      "bsonType": "timestamp",
+      "description": "加入时间",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    },
+    "status": {
+      "bsonType": "string",
+      "description": "状态",
+      "enum": ["active", "inactive"],
+      "defaultValue": "active"
+    }
+  },
+  "permission": {
+    "read": "auth.uid != null",
+    "create": "auth.uid != null",
+    "update": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "delete": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0"
+  }
+}
