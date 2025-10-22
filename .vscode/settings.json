@@ -1,0 +1,7 @@
+{
+  "java.jdt.ls.java.home": "/Users/talexdreamsoul/.local/share/mise/installs/java/17.0.2",
+  "java.import.gradle.java.home": "/Users/talexdreamsoul/.local/share/mise/installs/java/17.0.2",
+  "debug.javascript.defaultRuntimeExecutable": {
+    "pwa-node": "/Users/talexdreamsoul/.local/share/mise/shims/node"
+  }
+}
