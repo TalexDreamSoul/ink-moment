@@ -51,37 +51,47 @@ export default {
           throw new Error(loginRes.errMsg || '微信登录失败')
         }
         
-        // 获取用户信息 - 必须在用户点击事件中调用
+        // 获取用户信息
         const userInfoRes = await this.getWxUserInfo()
         if (!userInfoRes.userInfo) {
           throw new Error('获取用户信息失败')
         }
         
-        // 生成简单的用户ID和token（简化版登录）
-        const uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-        const token = 'token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
+        // 调用云函数进行登录
+        const result = await uniCloud.callFunction({
+          name: 'user-auth-simple',
+          data: {
+            action: 'wxLogin',
+            userInfo: userInfoRes.userInfo
+          }
+        })
         
-        // 保存登录状态
-        uni.setStorageSync('uid', uid)
-        uni.setStorageSync('token', token)
-        uni.setStorageSync('isLoggedIn', true)
-        uni.setStorageSync('userInfo', userInfoRes.userInfo)
-        
-        // 检查是否有用户信息
-        const userProfile = uni.getStorageSync('userProfile')
-        const hasProfile = userProfile && userProfile.is_completed
-        
-        // 根据用户状态跳转
-        if (!hasProfile) {
-          // 首次登录，跳转到信息填写页面
-          uni.reLaunch({
-            url: '/pages/auth/profile-edit'
-          })
+        if (result.result.code === 0) {
+          const { uid, token, hasProfile, isCompleted } = result.result.data
+          
+          // 保存登录状态
+          uni.setStorageSync('uid', uid)
+          uni.setStorageSync('token', token)
+          
+          // 根据用户状态跳转
+          if (!hasProfile) {
+            // 首次登录，跳转到信息填写页面
+            uni.reLaunch({
+              url: '/pages/auth/profile-edit'
+            })
+          } else if (!isCompleted) {
+            // 信息不完整，跳转到信息填写页面
+            uni.reLaunch({
+              url: '/pages/auth/profile-edit?edit=true'
+            })
+          } else {
+            // 信息完整，跳转到主页
+            uni.reLaunch({
+              url: '/pages/home/index'
+            })
+          }
         } else {
-          // 信息完整，跳转到主页
-          uni.reLaunch({
-            url: '/pages/home/index'
-          })
+          throw new Error(result.result.message || '登录失败')
         }
       } catch (error) {
         console.error('wxLogin error:', error)
