@@ -10,9 +10,9 @@ exports.main = async (event, context) => {
       case 'wxLogin':
         return await handleWxLogin(code)
       case 'getUserInfo':
-        return await getUserInfo()
+        return await getUserInfo(context)
       case 'updateProfile':
-        return await updateProfile(profile)
+        return await updateProfile(profile, context)
       default:
         return {
           code: -1,
@@ -31,6 +31,14 @@ exports.main = async (event, context) => {
 // 处理微信登录
 async function handleWxLogin(code) {
   try {
+    // 验证code参数
+    if (!code || typeof code !== 'string') {
+      return {
+        code: -1,
+        message: '微信登录code无效'
+      }
+    }
+    
     // 调用微信API获取openid和session_key
     const wxResult = await uniCloud.httpclient.request('https://api.weixin.qq.com/sns/jscode2session', {
       method: 'GET',
@@ -91,9 +99,9 @@ async function handleWxLogin(code) {
 }
 
 // 获取用户信息
-async function getUserInfo() {
+async function getUserInfo(context) {
   try {
-    // 从请求头获取token，实际应该从token解析用户ID
+    // 从请求头获取token
     const token = context.headers['x-token'] || context.headers['token']
     if (!token) {
       return {
@@ -102,14 +110,16 @@ async function getUserInfo() {
       }
     }
     
-    // 简单的token解析，实际应该更安全
-    const uid = token.split('_')[1]
-    if (!uid) {
+    // 解析token
+    const tokenData = parseToken(token)
+    if (!tokenData) {
       return {
         code: -1,
-        message: 'token无效'
+        message: 'token无效或已过期'
       }
     }
+    
+    const uid = tokenData.uid
     
     const userResult = await db.collection('user-profiles').doc(uid).get()
     
@@ -136,8 +146,16 @@ async function getUserInfo() {
 }
 
 // 更新用户信息
-async function updateProfile(profile) {
+async function updateProfile(profile, context) {
   try {
+    // 验证profile参数
+    if (!profile || typeof profile !== 'object') {
+      return {
+        code: -1,
+        message: '用户信息参数无效'
+      }
+    }
+    
     // 从请求头获取token
     const token = context.headers['x-token'] || context.headers['token']
     if (!token) {
@@ -147,14 +165,16 @@ async function updateProfile(profile) {
       }
     }
     
-    // 简单的token解析
-    const uid = token.split('_')[1]
-    if (!uid) {
+    // 解析token
+    const tokenData = parseToken(token)
+    if (!tokenData) {
       return {
         code: -1,
-        message: 'token无效'
+        message: 'token无效或已过期'
       }
     }
+    
+    const uid = tokenData.uid
     
     // 检查学号是否重复
     if (profile.student_id) {
@@ -202,4 +222,35 @@ function generateToken(uid) {
   const timestamp = Date.now()
   const random = Math.random().toString(36).substr(2, 9)
   return `token_${uid}_${timestamp}_${random}`
+}
+
+// 解析token
+function parseToken(token) {
+  if (!token || typeof token !== 'string') {
+    return null
+  }
+  
+  const parts = token.split('_')
+  if (parts.length !== 4 || parts[0] !== 'token') {
+    return null
+  }
+  
+  const uid = parts[1]
+  const timestamp = parseInt(parts[2])
+  const random = parts[3]
+  
+  // 检查时间戳是否有效（24小时内）
+  const now = Date.now()
+  const tokenTime = timestamp
+  const validTime = 24 * 60 * 60 * 1000 // 24小时
+  
+  if (now - tokenTime > validTime) {
+    return null
+  }
+  
+  return {
+    uid: uid,
+    timestamp: timestamp,
+    random: random
+  }
 }

@@ -79,6 +79,7 @@ if (!Math) {
 const _sfc_main = {
   onLaunch: async function() {
     common_vendor.index.__f__("log", "at App.vue:6", "App Launch");
+    common_vendor.tr.initSecureNetworkByWeixin();
   },
   mounted() {
   },
