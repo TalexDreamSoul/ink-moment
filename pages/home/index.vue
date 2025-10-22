@@ -1,113 +1,110 @@
 
 <template>
-  <view class="home-page">
+  <view class="page">
     <!-- 未登录状态 -->
-    <view v-if="!isLoggedIn" class="page">
-      <view class="header">
-        <text class="title">溯间砚时</text>
-      </view>
-      
-      <view class="content">
-        <view class="empty-state">
-          <text class="empty-text">欢迎使用溯间砚时</text>
-          <text class="empty-desc">点击下方按钮开始授权登录</text>
-          <button class="btn" @click="goToLogin">开始登录</button>
-        </view>
+    <view v-if="!isLoggedIn" class="page-content">
+      <view class="empty-state">
+        <text class="empty-icon">🔐</text>
+        <text class="empty-title">欢迎使用溯间砚时</text>
+        <text class="empty-desc">点击下方按钮开始授权登录</text>
+        <button class="btn btn-primary btn-large" @click="goToLogin">开始登录</button>
       </view>
     </view>
     
     <!-- 已登录但信息不完整 -->
-    <view v-else-if="!userProfile || !userProfile.is_completed" class="page">
-      <view class="header">
-        <text class="title">完善个人信息</text>
-      </view>
-      
-      <view class="content">
-        <view class="empty-state">
-          <text class="empty-text">请完善您的个人信息</text>
-          <text class="empty-desc">首次使用需要填写基本信息</text>
-          <button class="btn" @click="goToProfile">填写信息</button>
-        </view>
+    <view v-else-if="!userProfile || !userProfile.is_completed" class="page-content">
+      <view class="empty-state">
+        <text class="empty-icon">📝</text>
+        <text class="empty-title">完善个人信息</text>
+        <text class="empty-desc">首次使用需要填写基本信息</text>
+        <button class="btn btn-primary btn-large" @click="goToProfile">填写信息</button>
       </view>
     </view>
     
     <!-- 已登录且信息完整 -->
-    <view v-else class="page">
-      <view class="header">
-        <text class="title">欢迎回来，{{ userProfile.name }}</text>
+    <view v-else class="page-content">
+      <!-- 欢迎信息 -->
+      <view class="card">
+        <view class="card-header">
+          <text class="card-title">欢迎回来，{{ userProfile.name }}</text>
+          <text class="card-desc">今天也要加油哦！</text>
+        </view>
       </view>
       
-      <view class="content">
-      
-        <!-- 打卡状态区域 -->
-        <view class="clock-section">
-          <view class="clock-status">
-            <text class="status-text">{{ clockStatus.text }}</text>
-            <text class="status-time" v-if="currentRecord">{{ formatTime(currentRecord.clock_in_time) }}</text>
-          </view>
-          
-          <!-- 工作时长显示 -->
-          <view class="work-duration" v-if="currentRecord">
-            <text class="duration-label">已工作时长</text>
-            <text class="duration-time">{{ formatDuration(workDuration) }}</text>
-          </view>
-          
-          <!-- 打卡按钮 -->
-          <button 
-            class="clock-btn" 
-            :class="clockStatus.class"
-            @click="handleClock"
-            :disabled="clocking"
-          >
-            <text class="btn-text">{{ clockStatus.buttonText }}</text>
-          </button>
+      <!-- 打卡状态区域 -->
+      <view class="card">
+        <view class="clock-status">
+          <text class="status-text">{{ clockStatus.text }}</text>
+          <text class="status-time" v-if="currentRecord">{{ formatTime(currentRecord.clock_in_time) }}</text>
         </view>
+        
+        <!-- 工作时长显示 -->
+        <view class="work-duration" v-if="currentRecord">
+          <text class="duration-label">已工作时长</text>
+          <text class="duration-time">{{ formatDuration(workDuration) }}</text>
+        </view>
+        
+        <!-- 打卡按钮 -->
+        <button 
+          class="btn btn-large" 
+          :class="clockStatus.class === 'clock-in' ? 'btn-primary' : 'btn-error'"
+          @click="handleClock"
+          :disabled="clocking"
+        >
+          {{ clockStatus.buttonText }}
+        </button>
       </view>
       
       <!-- 今日统计 -->
-      <view class="today-stats">
-        <view class="stat-item">
-          <text class="stat-value">{{ todayStats.totalMinutes }}</text>
-          <text class="stat-label">分钟</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{ todayStats.recordCount }}</text>
-          <text class="stat-label">次打卡</text>
-        </view>
-        <view class="stat-item">
-          <text class="stat-value">{{ todayStats.orgCount }}</text>
-          <text class="stat-label">个组织</text>
+      <view class="stats-card">
+        <view class="stats-grid">
+          <view class="stat-item">
+            <text class="stat-value">{{ todayStats.totalMinutes }}</text>
+            <text class="stat-label">分钟</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{ todayStats.recordCount }}</text>
+            <text class="stat-label">次打卡</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-value">{{ todayStats.orgCount }}</text>
+            <text class="stat-label">个组织</text>
+          </view>
         </view>
       </view>
       
       <!-- 快捷功能 -->
-      <view class="quick-actions">
+      <view class="action-grid">
         <view class="action-item" @click="goToRecords">
           <text class="action-icon">📊</text>
-          <text class="action-text">打卡记录</text>
+          <text class="action-title">打卡记录</text>
+          <text class="action-desc">查看历史记录</text>
         </view>
         <view class="action-item" @click="goToStatistics">
           <text class="action-icon">📈</text>
-          <text class="action-text">时长统计</text>
+          <text class="action-title">时长统计</text>
+          <text class="action-desc">数据分析</text>
         </view>
         <view class="action-item" @click="goToOrganizations">
           <text class="action-icon">🏢</text>
-          <text class="action-text">我的组织</text>
+          <text class="action-title">我的组织</text>
+          <text class="action-desc">组织管理</text>
         </view>
         <view class="action-item" @click="goToProfile">
           <text class="action-icon">👤</text>
-          <text class="action-text">个人中心</text>
+          <text class="action-title">个人中心</text>
+          <text class="action-desc">个人信息</text>
         </view>
       </view>
       
       <!-- 管理员入口 -->
-      <view v-if="isAdmin" class="admin-section">
-        <button class="admin-btn" @click="goToAdmin">
-          <text class="admin-text">🔧 管理员入口</text>
+      <view v-if="isAdmin" class="card">
+        <button class="btn btn-secondary btn-large" @click="goToAdmin">
+          🔧 管理员入口
         </button>
       </view>
-    </view>view>
     </view>
+  </view>
 </template>
 
 <script>
@@ -214,16 +211,21 @@ export default {
     
     async loadUserData() {
       try {
-        // 从本地存储获取用户信息
-        const userInfo = uni.getStorageSync('userInfo')
+        // 简化版本，先检查本地存储
         const userProfile = uni.getStorageSync('userProfile')
         
-        if (userInfo) {
+        if (userProfile && userProfile.meta && userProfile.meta.init) {
           this.userProfile = {
-            name: userInfo.nickName,
-            avatar: userInfo.avatarUrl,
-            is_completed: userProfile ? userProfile.is_completed : false
+            name: userProfile.name || '用户',
+            avatar: userProfile.meta?.avatar || '/static/logo.png',
+            is_completed: userProfile.is_completed || false
           }
+        } else {
+          // 需要初始化用户信息，跳转到信息填写页面
+          uni.reLaunch({
+            url: '/pages/auth/profile-edit'
+          })
+          return
         }
         
         // 检查管理员权限
@@ -239,6 +241,10 @@ export default {
         this.startDurationTimer()
       } catch (error) {
         console.error('loadUserData error:', error)
+        // 出错时跳转到信息填写页面
+        uni.reLaunch({
+          url: '/pages/auth/profile-edit'
+        })
       }
     },
     
@@ -498,99 +504,40 @@ export default {
 </script>
 
 <style scoped>
-.page {
-  min-height: 100vh;
-  background: #fff;
-  padding-top: var(--status-bar-height);
-}
+@import url('@/common/styles/common.css');
 
-.header {
-  padding: 32rpx 24rpx;
-  border-bottom: 1rpx solid #e5e5e5;
-}
-
-.title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.content {
-  padding: 40rpx 24rpx;
-}
-
-.empty-state {
-  text-align: center;
-  padding: 80rpx 0;
-}
-
-.empty-text {
-  display: block;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 16rpx;
-}
-
-.empty-desc {
-  display: block;
-  font-size: 28rpx;
-  color: #666;
-  margin-bottom: 32rpx;
-}
-
-.btn {
-  width: 200rpx;
-  height: 64rpx;
-  background: #007aff;
-  color: #fff;
-  border: none;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
-}
-
-.clock-section {
-  background: #fff;
-  border: 1rpx solid #e5e5e5;
-  border-radius: 8rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
-  text-align: center;
-}
-
+/* 打卡状态样式 */
 .clock-status {
-  margin-bottom: 24rpx;
+  text-align: center;
+  margin-bottom: 32rpx;
 }
 
 .status-text {
   display: block;
   font-size: 32rpx;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin-bottom: 8rpx;
 }
 
 .status-time {
   display: block;
   font-size: 28rpx;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .work-duration {
   margin-bottom: 32rpx;
   padding: 24rpx;
-  background: #f8f9fa;
-  border-radius: 8rpx;
+  background: var(--bg-secondary);
+  border-radius: 12rpx;
+  text-align: center;
 }
 
 .duration-label {
   display: block;
   font-size: 24rpx;
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 8rpx;
 }
 
@@ -598,104 +545,6 @@ export default {
   display: block;
   font-size: 48rpx;
   font-weight: 600;
-  color: #007aff;
-}
-
-.clock-btn {
-  width: 100%;
-  height: 80rpx;
-  border: none;
-  border-radius: 8rpx;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.clock-btn.clock-in {
-  background: #007aff;
-}
-
-.clock-btn.clock-out {
-  background: #ff3b30;
-}
-
-.clock-btn:disabled {
-  background: #ccc;
-}
-
-.today-stats {
-  display: flex;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
-}
-
-.stat-item {
-  flex: 1;
-  text-align: center;
-}
-
-.stat-value {
-  display: block;
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #667eea;
-  margin-bottom: 10rpx;
-}
-
-.stat-label {
-  display: block;
-  font-size: 24rpx;
-  color: #666;
-}
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
-  margin-bottom: 30rpx;
-}
-
-.action-item {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 15rpx;
-  padding: 30rpx 20rpx;
-  text-align: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-}
-
-.action-icon {
-  display: block;
-  font-size: 40rpx;
-  margin-bottom: 15rpx;
-}
-
-.action-text {
-  display: block;
-  font-size: 26rpx;
-  color: #333;
-}
-
-.admin-section {
-  margin-top: 30rpx;
-}
-
-.admin-btn {
-  width: 100%;
-  height: 80rpx;
-  background: rgba(255, 255, 255, 0.95);
-  border: 2rpx solid #667eea;
-  border-radius: 40rpx;
-  color: #667eea;
-  font-size: 28rpx;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  color: var(--primary-color);
 }
 </style>

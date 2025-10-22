@@ -5,7 +5,8 @@ import checkUpdate from '@/uni_modules/uni-upgrade-center-app/utils/check-update
   onLaunch: async function() {
     console.log('App Launch')
     // #ifdef MP-WEIXIN
-    uniCloud.initSecureNetworkByWeixin()
+    // 注释掉安全网络初始化，避免OAuth配置错误
+    // uniCloud.initSecureNetworkByWeixin()
     // #endif
     checkUpdate() //更新升级
   },

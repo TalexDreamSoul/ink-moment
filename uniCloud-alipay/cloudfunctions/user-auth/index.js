@@ -1,204 +1,205 @@
 'use strict';
 
-const uniID = require('uni-id')
+const db = uniCloud.database()
 
 exports.main = async (event, context) => {
-  const { action, code, userInfo } = event
+  const { action, code, profile } = event
   
   try {
     switch (action) {
       case 'wxLogin':
-        return await wxLogin(code, userInfo)
-      case 'getUserProfile':
-        return await getUserProfile(event.userInfo.uid)
-      case 'updateUserProfile':
-        return await updateUserProfile(event.userInfo.uid, event.profileData)
+        return await handleWxLogin(code)
+      case 'getUserInfo':
+        return await getUserInfo()
+      case 'updateProfile':
+        return await updateProfile(profile)
       default:
         return {
-          code: 400,
-          message: '无效的操作类型'
+          code: -1,
+          message: '未知操作'
         }
     }
   } catch (error) {
     console.error('user-auth error:', error)
     return {
-      code: 500,
-      message: '服务器错误',
-      error: error.message
+      code: -1,
+      message: error.message || '操作失败'
     }
   }
 }
 
-// 微信登录
-async function wxLogin(code, userInfo) {
+// 处理微信登录
+async function handleWxLogin(code) {
   try {
-    // 简化登录方式，直接使用微信openid
-    const db = uniCloud.database()
-    
-    // 通过code获取openid
-    const openidResult = await uniCloud.httpclient.request('https://api.weixin.qq.com/sns/jscode2session', {
+    // 调用微信API获取openid和session_key
+    const wxResult = await uniCloud.httpclient.request('https://api.weixin.qq.com/sns/jscode2session', {
       method: 'GET',
       data: {
-        appid: 'wx0a9c4d5b8cac1bc1', // 从manifest.json获取
-        secret: 'YOUR_WECHAT_SECRET', // 需要配置微信小程序的secret
+        appid: 'wx0a9c4d5b8cac1bc1', // 微信小程序AppID
+        secret: '6a0b8065b4795bd63d219c91fdc18f28', // 微信小程序Secret，需要配置
         js_code: code,
         grant_type: 'authorization_code'
       }
     })
     
-    if (openidResult.status !== 200) {
+    if (wxResult.data.errcode) {
       return {
-        code: 400,
-        message: '获取微信openid失败'
+        code: -1,
+        message: `微信登录失败: ${wxResult.data.errmsg}`
       }
     }
     
-    const { openid, session_key } = JSON.parse(openidResult.data)
+    const { openid, session_key } = wxResult.data
     
-    if (!openid) {
-      return {
-        code: 400,
-        message: '微信登录失败，未获取到openid'
-      }
-    }
+    // 检查用户是否已存在
+    const userResult = await db.collection('user-profiles').where({
+      openid: openid
+    }).get()
     
-    // 生成用户ID和token
-    const uid = 'user_' + openid
-    const token = 'token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
-    
-    // 检查用户是否已填写个人信息
-    const db = uniCloud.database()
-    const profileResult = await db.collection('user_profiles')
-      .where({
-        user_id: uid
+    let uid
+    if (userResult.data.length > 0) {
+      // 用户已存在
+      uid = userResult.data[0]._id
+    } else {
+      // 创建新用户
+      const createResult = await db.collection('user-profiles').add({
+        openid: openid,
+        session_key: session_key,
+        created_at: new Date(),
+        updated_at: new Date()
       })
-      .get()
+      uid = createResult.id
+    }
     
-    const hasProfile = profileResult.data.length > 0
-    const isCompleted = hasProfile && profileResult.data[0].is_completed
+    // 生成token
+    const token = generateToken(uid)
     
     return {
       code: 0,
-      message: '登录成功',
       data: {
-        uid,
-        token,
-        hasProfile,
-        isCompleted,
-        profile: hasProfile ? profileResult.data[0] : null
+        uid: uid,
+        token: token
       }
     }
   } catch (error) {
-    console.error('wxLogin error:', error)
+    console.error('handleWxLogin error:', error)
     return {
-      code: 500,
-      message: '微信登录失败',
-      error: error.message
+      code: -1,
+      message: '微信登录失败'
     }
   }
 }
 
 // 获取用户信息
-async function getUserProfile(uid) {
+async function getUserInfo() {
   try {
-    const db = uniCloud.database()
-    const result = await db.collection('user_profiles')
-      .where({
-        user_id: uid
-      })
-      .get()
-    
-    if (result.data.length === 0) {
+    // 从请求头获取token，实际应该从token解析用户ID
+    const token = context.headers['x-token'] || context.headers['token']
+    if (!token) {
       return {
-        code: 404,
-        message: '用户信息不存在'
+        code: -1,
+        message: '未登录'
+      }
+    }
+    
+    // 简单的token解析，实际应该更安全
+    const uid = token.split('_')[1]
+    if (!uid) {
+      return {
+        code: -1,
+        message: 'token无效'
+      }
+    }
+    
+    const userResult = await db.collection('user-profiles').doc(uid).get()
+    
+    if (userResult.data.length === 0) {
+      return {
+        code: -1,
+        message: '用户不存在'
       }
     }
     
     return {
       code: 0,
-      message: '获取成功',
-      data: result.data[0]
+      data: {
+        profile: userResult.data[0]
+      }
     }
   } catch (error) {
-    console.error('getUserProfile error:', error)
+    console.error('getUserInfo error:', error)
     return {
-      code: 500,
-      message: '获取用户信息失败',
-      error: error.message
+      code: -1,
+      message: '获取用户信息失败'
     }
   }
 }
 
 // 更新用户信息
-async function updateUserProfile(uid, profileData) {
+async function updateProfile(profile) {
   try {
-    const db = uniCloud.database()
+    // 从请求头获取token
+    const token = context.headers['x-token'] || context.headers['token']
+    if (!token) {
+      return {
+        code: -1,
+        message: '未登录'
+      }
+    }
     
-    // 检查学号是否已存在
-    if (profileData.student_id) {
-      const existingUser = await db.collection('user_profiles')
-        .where({
-          student_id: profileData.student_id,
-          user_id: db.command.neq(uid)
-        })
-        .get()
+    // 简单的token解析
+    const uid = token.split('_')[1]
+    if (!uid) {
+      return {
+        code: -1,
+        message: 'token无效'
+      }
+    }
+    
+    // 检查学号是否重复
+    if (profile.student_id) {
+      const existingUser = await db.collection('user-profiles').where({
+        student_id: profile.student_id,
+        _id: db.command.neq(uid)
+      }).get()
       
       if (existingUser.data.length > 0) {
         return {
-          code: 400,
+          code: -1,
           message: '学号已存在，请使用其他学号'
         }
       }
     }
     
-    // 检查是否已存在用户信息
-    const existingProfile = await db.collection('user_profiles')
-      .where({
-        user_id: uid
-      })
-      .get()
+    // 更新用户信息
+    const updateResult = await db.collection('user-profiles').doc(uid).update({
+      ...profile,
+      updated_at: new Date()
+    })
     
-    const now = new Date()
-    const updateData = {
-      ...profileData,
-      updated_at: now,
-      submitted_at: now,
-      is_completed: true
-    }
-    
-    // 确保meta对象存在
-    if (!updateData.meta) {
-      updateData.meta = {}
-    }
-    
-    let result
-    if (existingProfile.data.length > 0) {
-      // 更新现有记录
-      result = await db.collection('user_profiles')
-        .doc(existingProfile.data[0]._id)
-        .update(updateData)
-    } else {
-      // 创建新记录
-      result = await db.collection('user_profiles')
-        .add({
-          user_id: uid,
-          ...updateData,
-          created_at: now
-        })
+    if (updateResult.updated === 0) {
+      return {
+        code: -1,
+        message: '更新用户信息失败'
+      }
     }
     
     return {
       code: 0,
-      message: '用户信息更新成功',
-      data: result
+      message: '用户信息更新成功'
     }
   } catch (error) {
-    console.error('updateUserProfile error:', error)
+    console.error('updateProfile error:', error)
     return {
-      code: 500,
-      message: '更新用户信息失败',
-      error: error.message
+      code: -1,
+      message: '更新用户信息失败'
     }
   }
+}
+
+// 生成token
+function generateToken(uid) {
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substr(2, 9)
+  return `token_${uid}_${timestamp}_${random}`
 }

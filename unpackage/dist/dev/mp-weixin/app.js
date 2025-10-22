@@ -2,8 +2,8 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const common_vendor = require("./common/vendor.js");
 if (!Math) {
-  "./pages/welcome/index.js";
   "./pages/home/index.js";
+  "./pages/welcome/index.js";
   "./pages/auth/login.js";
   "./pages/auth/profile-edit.js";
   "./pages/work/records.js";
@@ -79,15 +79,14 @@ if (!Math) {
 const _sfc_main = {
   onLaunch: async function() {
     common_vendor.index.__f__("log", "at App.vue:6", "App Launch");
-    common_vendor.tr.initSecureNetworkByWeixin();
   },
   mounted() {
   },
   onShow: function() {
-    common_vendor.index.__f__("log", "at App.vue:19", "App Show");
+    common_vendor.index.__f__("log", "at App.vue:20", "App Show");
   },
   onHide: function() {
-    common_vendor.index.__f__("log", "at App.vue:22", "App Hide");
+    common_vendor.index.__f__("log", "at App.vue:23", "App Hide");
   }
 };
 function createApp() {

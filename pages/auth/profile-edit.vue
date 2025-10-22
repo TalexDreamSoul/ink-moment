@@ -258,14 +258,30 @@ export default {
         
         this.submitting = true
         
-        // 保存用户信息到本地存储
-        const userProfile = {
-          ...this.formData,
-          is_completed: true,
-          updated_at: new Date().toISOString()
-        }
+        // 通过云函数保存用户信息
+        const token = uni.getStorageSync('token')
+        const result = await uniCloud.callFunction({
+          name: 'user-auth',
+          data: {
+            action: 'updateProfile',
+            profile: {
+              ...this.formData,
+              is_completed: true,
+              meta: {
+                ...this.formData.meta,
+                init: true // 标记已初始化
+              },
+              updated_at: new Date().toISOString()
+            }
+          },
+          header: {
+            'x-token': token
+          }
+        })
         
-        uni.setStorageSync('userProfile', userProfile)
+        if (result.result.code !== 0) {
+          throw new Error(result.result.message || '保存用户信息失败')
+        }
         
         uni.showToast({
           title: '信息提交成功',

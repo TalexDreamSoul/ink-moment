@@ -1,6 +1,5 @@
 "use strict";
 const _imports_0$4 = "/static/logo.png";
-const _imports_1$2 = "/static/wx-icon.png";
 const _imports_0$3 = "/static/tabbar/fn1.png";
 const _imports_1$1 = "/static/tabbar/obj1.png";
 const _imports_2 = "/static/tabbar/storage1.png";
@@ -15,9 +14,8 @@ exports._imports_0$1 = _imports_0$3;
 exports._imports_0$2 = _imports_0$2;
 exports._imports_0$3 = _imports_0$1;
 exports._imports_0$4 = _imports_0;
-exports._imports_1 = _imports_1$2;
-exports._imports_1$1 = _imports_1$1;
-exports._imports_1$2 = _imports_1;
+exports._imports_1 = _imports_1$1;
+exports._imports_1$1 = _imports_1;
 exports._imports_2 = _imports_2;
 exports._imports_3 = _imports_3;
 exports._imports_4 = _imports_4;

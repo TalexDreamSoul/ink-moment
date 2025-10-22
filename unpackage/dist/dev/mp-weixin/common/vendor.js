@@ -8313,17 +8313,17 @@ const createSubpackageApp = initCreateSubpackageApp();
 }
 const pages = [
   {
-    path: "pages/welcome/index",
+    path: "pages/home/index",
     style: {
-      navigationBarTitleText: "欢迎使用",
+      navigationBarTitleText: "溯间砚时",
       enablePullDownRefresh: false,
       navigationStyle: "custom"
     }
   },
   {
-    path: "pages/home/index",
+    path: "pages/welcome/index",
     style: {
-      navigationBarTitleText: "溯间砚时",
+      navigationBarTitleText: "欢迎使用",
       enablePullDownRefresh: false,
       navigationStyle: "custom"
     }

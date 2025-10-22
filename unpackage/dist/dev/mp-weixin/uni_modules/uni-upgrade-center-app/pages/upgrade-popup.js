@@ -272,7 +272,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   } : {}), {
     x: !$data.is_mandatory
   }, !$data.is_mandatory ? {
-    y: common_assets._imports_1$2,
+    y: common_assets._imports_1$1,
     z: common_vendor.o((...args) => $options.closeUpdate && $options.closeUpdate(...args))
   } : {});
 }

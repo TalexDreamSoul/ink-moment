@@ -18,7 +18,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return {
     a: common_assets._imports_0$1,
     b: common_vendor.o(($event) => $options.navigateTo("/pages/cloudFunction/cloudFunction")),
-    c: common_assets._imports_1$1,
+    c: common_assets._imports_1,
     d: common_vendor.o(($event) => $options.navigateTo("/pages/cloudObject/cloudObject")),
     e: common_assets._imports_2,
     f: common_vendor.o(($event) => $options.navigateTo("/pages/storage/storage")),

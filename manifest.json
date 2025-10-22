@@ -92,13 +92,7 @@
         },
         "requiredPrivateInfos" : [
             "getLocation"
-        ],
-        "oauth" : {
-            "weixin" : {
-                "appid" : "wx0a9c4d5b8cac1bc1",
-                "secret" : "YOUR_WECHAT_SECRET"
-            }
-        }
+        ]
     },
     "h5" : {
         "template" : "template.h5.html",
