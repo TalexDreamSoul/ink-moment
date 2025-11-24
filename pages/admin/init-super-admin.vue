@@ -114,12 +114,12 @@ export default {
         // 更新用户信息显示
         this.userInfo = userInfoRes.userInfo
         
-        // 先进行简化登录
+        // 先进行登录
         const loginResult = await uniCloud.callFunction({
-          name: 'user-auth-simple',
+          name: 'user-auth',
           data: {
             action: 'wxLogin',
-            userInfo: userInfoRes.userInfo
+            code: loginRes.code
           }
         })
         
@@ -128,15 +128,23 @@ export default {
         }
         
         // 保存登录状态
-        uni.setStorageSync('uid', loginResult.result.data.uid)
-        uni.setStorageSync('token', loginResult.result.data.token)
+        const { uid, token, tokenExpired } = loginResult.result.data
+        uni.setStorageSync('uid', uid)
+        uni.setStorageSync('token', token)
+        uni.setStorageSync('isLoggedIn', true)
+        uni.setStorageSync('uni_id_uid', uid)
+        uni.setStorageSync('uni_id_token', token)
+        uni.setStorageSync('uni_id_token_expired', tokenExpired || 0)
         
         // 调用云函数初始化超级管理员
         const result = await uniCloud.callFunction({
           name: 'system-init',
           data: {
             action: 'initSuperAdmin',
-            userInfo: userInfoRes.userInfo
+            userInfo: {
+              ...userInfoRes.userInfo,
+              uid
+            }
           }
         })
         
@@ -148,7 +156,7 @@ export default {
             success: () => {
               // 跳转到主页
               uni.reLaunch({
-                url: '/pages/home/index'
+                url: '/pages/welcome/welcome'
               })
             }
           })

@@ -1,19 +1,24 @@
 {
-  "pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+  "pages": [
     {
-      "path": "pages/home/index",
+      "path": "pages/welcome/welcome",
       "style": {
-        "navigationBarTitleText": "溯间砚时",
-        "enablePullDownRefresh": false,
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "总览",
+        "enablePullDownRefresh": true
       }
     },
     {
-      "path": "pages/welcome/index",
+      "path": "pages/clock/clock",
       "style": {
-        "navigationBarTitleText": "欢迎使用",
-        "enablePullDownRefresh": false,
-        "navigationStyle": "custom"
+        "navigationBarTitleText": "打卡",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/profile/profile",
+      "style": {
+        "navigationBarTitleText": "个人中心",
+        "enablePullDownRefresh": true
       }
     },
     {
@@ -32,31 +37,10 @@
       }
     },
     {
-      "path": "pages/work/records",
-      "style": {
-        "navigationBarTitleText": "打卡记录",
-        "enablePullDownRefresh": true
-      }
-    },
-    {
-      "path": "pages/work/detail",
-      "style": {
-        "navigationBarTitleText": "打卡详情",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
       "path": "pages/volunteer/statistics",
       "style": {
         "navigationBarTitleText": "时长统计",
         "enablePullDownRefresh": true
-      }
-    },
-    {
-      "path": "pages/volunteer/export",
-      "style": {
-        "navigationBarTitleText": "数据导出",
-        "enablePullDownRefresh": false
       }
     },
     {
@@ -264,209 +248,6 @@
       }
     },
     {
-      "path": "pages/profile/index",
-      "style": {
-        "navigationBarTitleText": "个人中心",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/home/home",
-      "style": {
-        "navigationBarTitleText": "开发页面",
-        "enablePullDownRefresh": false,
-        "navigationStyle": "custom"
-      }
-    },
-    {
-      "path": "pages/cloudFunction/cloudFunction",
-      "style": {
-        "navigationBarTitleText": "云函数",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/cloudObject/cloudObject",
-      "style": {
-        "navigationBarTitleText": "云对象",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/secure-network/cloud-function",
-      "style": {
-        "navigationBarTitleText": "安全网络 - 云函数",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/secure-network/cloud-object",
-      "style": {
-        "navigationBarTitleText": "安全网络 - 云对象",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/test/test",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/unicloud-db-demo/unicloud-db-demo",
-      "style": {
-        "navigationBarTitleText": "unicloud-db demo",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/demo/demo",
-      "style": {
-        "navigationBarTitleText": "留言板",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission-table-simple/permission-table-simple",
-      "style": {
-        "navigationBarTitleText": "表级-简单权限控制",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission-table-compound/permission-table-compound",
-      "style": {
-        "navigationBarTitleText": "表级-复杂权限控制",
-        "enablePullDownRefresh": false
-      }
-
-    },
-    {
-      "path": "pages/clientDB/clientDB",
-      "style": {
-        "navigationBarTitleText": "前端操作数据库",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/user-info/add",
-      "style": {
-        "navigationBarTitleText": "新增"
-      }
-    }, {
-      "path": "pages/user-info/edit",
-      "style": {
-        "navigationBarTitleText": "修改"
-      }
-    }, {
-      "path": "pages/user-info/list",
-      "style": {
-        "navigationBarTitleText": "列表"
-      }
-    }, {
-      "path": "pages/user-info/detail",
-      "style": {
-        "navigationBarTitleText": "详情"
-      }
-    },
-    {
-      "path": "pages/storage/storage",
-      "style": {
-        "navigationBarTitleText": "云存储",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/storage/space-storage",
-      "style": {
-        "navigationBarTitleText": "空间内置云存储",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/storage/ext-storage-qiniu",
-      "style": {
-        "navigationBarTitleText": "扩展存储-七牛云",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/schema2code/schema2code",
-      "style": {
-        "navigationBarTitleText": "schema2code",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission/permission",
-      "style": {
-        "navigationBarTitleText": "角色权限",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission-demo/permission-demo",
-      "style": {
-        "navigationBarTitleText": "角色权限",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission-demo/readme",
-      "style": {
-        "navigationBarTitleText": "角色权限",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/permission-field-simple/permission-field-simple",
-      "style": {
-        "navigationBarTitleText": "简单-字段级权限控制",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/clientDB-api/clientDB-api",
-      "style": {
-        "navigationBarTitleText": "前端操作数据库的API",
-        "enablePullDownRefresh": false
-      }
-    },
-    {
-      "path": "pages/clientDB/validate/validate",
-      "style": {
-        "navigationBarTitleText": "字段值域验证",
-        "enablePullDownRefresh": false
-      }
-
-    }, {
-      "path": "pages/validate-demo/add",
-      "style": {
-        "navigationBarTitleText": "新增"
-      }
-    }, {
-      "path": "pages/validate-demo/edit",
-      "style": {
-        "navigationBarTitleText": "修改"
-      }
-    }, {
-      "path": "pages/validate-demo/list",
-      "style": {
-        "navigationBarTitleText": ""
-      }
-    }, {
-      "path": "pages/validate-demo/detail",
-      "style": {}
-    }, {
-      "path": "pages/webview/webview",
-      "style": {
-        "navigationBarTitleText": "",
-        "enablePullDownRefresh": false
-      }
-
-    },
-    {
       "path": "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
       "style": {
         "disableScroll": true,
@@ -478,35 +259,39 @@
           "popGesture": "none",
           "animationType": "fade-in",
           "animationDuration": 200
-
         }
-      }
-    }, {
-      "path": "pages/cloudFunction/redis/redis",
-      "style": {
-        "navigationBarTitleText": "扩展能力Redis",
-        "enablePullDownRefresh": false
-      }
-    }, {
-      "path": "uni_modules/uni-upgrade-center/pages/version/list",
-      "style": {
-        "navigationBarTitleText": "版本列表"
-      }
-    }, {
-      "path": "uni_modules/uni-upgrade-center/pages/version/add",
-      "style": {
-        "navigationBarTitleText": "新版发布"
-      }
-    }, {
-      "path": "uni_modules/uni-upgrade-center/pages/version/detail",
-      "style": {
-        "navigationBarTitleText": "版本信息查看"
       }
     }
   ],
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/welcome/welcome",
+        "text": "总览",
+        "iconPath": "static/tabbar/fn.png",
+        "selectedIconPath": "static/tabbar/fn1.png"
+      },
+      {
+        "pagePath": "pages/clock/clock",
+        "text": "打卡",
+        "iconPath": "static/tabbar/yun.png",
+        "selectedIconPath": "static/tabbar/yun1.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "个人信息",
+        "iconPath": "static/tabbar/obj.png",
+        "selectedIconPath": "static/tabbar/obj1.png"
+      }
+    ]
+  },
   "globalStyle": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
+    "navigationBarTitleText": "溯间砚时",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
   }

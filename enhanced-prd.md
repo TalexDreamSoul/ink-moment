@@ -76,7 +76,7 @@
 }
 ```
 
-### 2.3 考勤统计表 (attendance_statistics)
+### 2.3 考勤统计表 (attendance-statistics)
 
 ```json
 {
@@ -132,7 +132,7 @@
    - 确认或拒绝申请
 
 4. 加入成功:
-   - 创建 organization_members 记录
+   - 创建 organization-members 记录
    - 发送成功通知
    - 更新邀请状态为 accepted
 ```
@@ -390,7 +390,7 @@ exports.handleInvitation = async (event) => {
   
   if (action === 'accept') {
     // 创建组织成员记录
-    await db.collection('organization_members').add({
+    await db.collection('organization-members').add({
       org_id: invitation.org_id,
       user_id: event.userInfo.uid,
       role: invitation.role
@@ -438,7 +438,7 @@ exports.sendNotification = async (event) => {
 exports.updateDailyStats = async (event) => {
   const { user_id, org_id, date, minutes } = event
   
-  const stats = await db.collection('attendance_statistics')
+  const stats = await db.collection('attendance-statistics')
     .where({
       user_id,
       org_id,
@@ -448,14 +448,14 @@ exports.updateDailyStats = async (event) => {
   
   if (stats.data.length > 0) {
     // 更新现有统计
-    await db.collection('attendance_statistics').doc(stats.data[0]._id).update({
+    await db.collection('attendance-statistics').doc(stats.data[0]._id).update({
       total_minutes: stats.data[0].total_minutes + minutes,
       record_count: stats.data[0].record_count + 1,
       updated_at: new Date()
     })
   } else {
     // 创建新统计
-    await db.collection('attendance_statistics').add({
+    await db.collection('attendance-statistics').add({
       user_id,
       org_id,
       date: new Date(date),
@@ -476,7 +476,7 @@ exports.clockReminder = async (event) => {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   
   // 查找今天未打卡的用户
-  const users = await db.collection('work_records')
+  const users = await db.collection('work-records')
     .where({
       clock_in_time: db.command.gte(today),
       clock_out_time: db.command.exists(false)

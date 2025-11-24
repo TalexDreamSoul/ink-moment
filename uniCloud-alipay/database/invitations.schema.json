@@ -73,8 +73,8 @@
   },
   "permission": {
     "read": "auth.uid != null",
-    "create": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
-    "update": "doc.inviter_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
-    "delete": "doc.inviter_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0"
+    "create": "get('organization-members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "update": "doc.inviter_id == auth.uid || get('organization-members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
+    "delete": "doc.inviter_id == auth.uid || get('organization-members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0"
   }
 }

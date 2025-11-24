@@ -1,6 +1,11 @@
 {
   "bsonType": "object",
-  "required": ["user_id", "org_id", "clock_in_time", "clock_in_location"],
+  "required": [
+    "user_id",
+    "org_id",
+    "clock_in_time",
+    "clock_in_location"
+  ],
   "properties": {
     "_id": {
       "description": "ID，系统自动生成"
@@ -67,13 +72,23 @@
     "status": {
       "bsonType": "string",
       "description": "状态",
-      "enum": ["ongoing", "completed", "pending", "approved", "rejected"],
+      "enum": [
+        "ongoing",
+        "completed",
+        "pending",
+        "approved",
+        "rejected"
+      ],
       "defaultValue": "ongoing"
     },
     "audit_status": {
       "bsonType": "string",
       "description": "审核状态",
-      "enum": ["pending", "approved", "rejected"],
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
       "defaultValue": "pending"
     },
     "auditor_id": {
@@ -94,9 +109,9 @@
     }
   },
   "permission": {
-    "read": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "read": "doc.user_id == auth.uid",
     "create": "auth.uid != null && doc.user_id == auth.uid",
-    "update": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
+    "update": "get('organization-members').where('org_id == doc.org_id && user_id == auth.uid && role == \"supervisor\"').count() > 0",
     "delete": false
   }
 }

@@ -1,6 +1,10 @@
 {
   "bsonType": "object",
-  "required": ["org_id", "user_id", "role"],
+  "required": [
+    "org_id",
+    "user_id",
+    "role"
+  ],
   "properties": {
     "_id": {
       "description": "ID，系统自动生成"
@@ -17,8 +21,13 @@
     },
     "role": {
       "bsonType": "string",
-      "description": "角色",
-      "enum": ["admin", "supervisor", "user"],
+      "description": "角色: owner(创建者) > admin(管理员) > supervisor(督导) > user(成员)",
+      "enum": [
+        "owner",
+        "admin",
+        "supervisor",
+        "user"
+      ],
       "defaultValue": "user"
     },
     "joined_at": {
@@ -31,14 +40,17 @@
     "status": {
       "bsonType": "string",
       "description": "状态",
-      "enum": ["active", "inactive"],
+      "enum": [
+        "active",
+        "inactive"
+      ],
       "defaultValue": "active"
     }
   },
   "permission": {
     "read": "auth.uid != null",
     "create": "auth.uid != null",
-    "update": "doc.user_id == auth.uid || get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0",
-    "delete": "get('organization_members').where('org_id == doc.org_id && user_id == auth.uid && role in [\"admin\", \"supervisor\"]').count() > 0"
+    "update": "auth.uid != null",
+    "delete": "auth.uid != null"
   }
 }

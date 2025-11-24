@@ -31,7 +31,7 @@ exports.main = async (event, context) => {
 async function checkSuperAdmin() {
   try {
     const db = uniCloud.database()
-    const result = await db.collection('system_roles')
+    const result = await db.collection('system-roles')
       .where({
         role: 'super_admin'
       })
@@ -61,7 +61,7 @@ async function initSuperAdmin(userId, userInfo) {
     const db = uniCloud.database()
     
     // 再次检查是否已有超级管理员
-    const existingAdmin = await db.collection('system_roles')
+    const existingAdmin = await db.collection('system-roles')
       .where({
         role: 'super_admin'
       })
@@ -76,7 +76,7 @@ async function initSuperAdmin(userId, userInfo) {
     
     // 创建超级管理员记录
     const now = new Date()
-    const result = await db.collection('system_roles').add({
+    const result = await db.collection('system-roles').add({
       user_id: userId,
       role: 'super_admin',
       assigned_by: 'system',
@@ -84,14 +84,14 @@ async function initSuperAdmin(userId, userInfo) {
     })
     
     // 创建用户信息记录（如果不存在）
-    const existingProfile = await db.collection('user_profiles')
+    const existingProfile = await db.collection('user-profiles')
       .where({
         user_id: userId
       })
       .get()
     
     if (existingProfile.data.length === 0) {
-      await db.collection('user_profiles').add({
+      await db.collection('user-profiles').add({
         user_id: userId,
         name: userInfo.nickName || '超级管理员',
         student_id: 'ADMIN_' + Date.now(),
@@ -135,14 +135,14 @@ async function getSystemStatus() {
     const db = uniCloud.database()
     
     // 检查超级管理员
-    const superAdminResult = await db.collection('system_roles')
+    const superAdminResult = await db.collection('system-roles')
       .where({
         role: 'super_admin'
       })
       .get()
     
     // 检查管理员数量
-    const adminResult = await db.collection('system_roles')
+    const adminResult = await db.collection('system-roles')
       .where({
         role: 'admin'
       })
@@ -153,7 +153,7 @@ async function getSystemStatus() {
       .get()
     
     // 检查用户数量
-    const userResult = await db.collection('user_profiles')
+    const userResult = await db.collection('user-profiles')
       .get()
     
     return {

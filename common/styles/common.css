@@ -1,10 +1,11 @@
 /* 溯间砚时 - 统一样式规范 */
 
-/* 颜色变量 */
+/* 颜色变量 - 扁平化设计 */
 :root {
-  --primary-color: #007aff;
-  --primary-light: #4da6ff;
-  --primary-dark: #0056cc;
+  --primary-color: #667eea;
+  --primary-light: #8b9cff;
+  --primary-dark: #4c63d2;
+  --secondary-color: #764ba2;
   --success-color: #34c759;
   --warning-color: #ff9500;
   --error-color: #ff3b30;
@@ -16,9 +17,11 @@
   --bg-tertiary: #f0f0f0;
   --border-color: #e5e5e5;
   --border-light: #f0f0f0;
-  --shadow-light: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
-  --shadow-medium: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  --shadow-heavy: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
+  --shadow-light: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  --shadow-heavy: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-light: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
 }
 
 /* 基础样式重置 */
@@ -244,11 +247,12 @@
 
 /* 统计卡片 */
 .stats-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20rpx;
+  background: #ffffff;
+  border-radius: 24rpx;
   padding: 32rpx;
   margin-bottom: 24rpx;
   box-shadow: var(--shadow-medium);
+  border: 1rpx solid #f0f0f0;
 }
 
 .stats-grid {
@@ -265,14 +269,14 @@
   display: block;
   font-size: 40rpx;
   font-weight: bold;
-  color: var(--bg-primary);
+  color: var(--primary-color);
   margin-bottom: 8rpx;
 }
 
 .stat-label {
   display: block;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
 }
 
 /* 功能网格 */
@@ -420,15 +424,71 @@
   }
 }
 
-.slide-up {
-  animation: slideUp 0.3s ease-out;
+/* WeChat Style Utilities */
+.wechat-page {
+  min-height: 100vh;
+  background-color: #EDEDED;
+  padding-bottom: 40rpx;
 }
 
-@keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+.wechat-cell-group {
+  background-color: #ffffff;
+  margin-bottom: 20rpx;
+}
+
+.wechat-cell {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 40rpx;
+  position: relative;
+  background-color: #ffffff;
+}
+
+.wechat-cell:active {
+  background-color: #f2f2f2;
+}
+
+.wechat-cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 112rpx;
+  bottom: 0;
+  right: 0;
+  height: 1rpx;
+  background-color: #f0f0f0;
+}
+
+.wechat-cell-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 32rpx;
+  font-size: 28rpx;
+  color: #ffffff;
+}
+
+.wechat-cell-text {
+  flex: 1;
+  font-size: 32rpx;
+  color: #111;
+}
+
+.wechat-cell-right {
+  display: flex;
+  align-items: center;
+}
+
+.wechat-cell-desc {
+  font-size: 28rpx;
+  color: #7f7f7f;
+  margin-right: 12rpx;
+}
+
+.wechat-arrow {
+  font-size: 28rpx;
+  color: #b2b2b2;
+  font-family: monospace;
 }

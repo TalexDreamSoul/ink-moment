@@ -1,6 +1,9 @@
 {
   "bsonType": "object",
-  "required": ["user_id", "role", "assigned_by"],
+  "required": [
+    "user_id",
+    "role"
+  ],
   "properties": {
     "_id": {
       "description": "ID，系统自动生成"
@@ -13,16 +16,13 @@
     "role": {
       "bsonType": "string",
       "description": "角色",
-      "enum": ["super_admin", "admin"]
+      "enum": [
+        "admin"
+      ]
     },
-    "assigned_by": {
-      "bsonType": "string",
-      "description": "分配人ID",
-      "foreignKey": "uni-id-users._id"
-    },
-    "assigned_at": {
+    "created_at": {
       "bsonType": "timestamp",
-      "description": "分配时间",
+      "description": "创建时间",
       "forceDefaultValue": {
         "$env": "now"
       }
@@ -30,8 +30,8 @@
   },
   "permission": {
     "read": "auth.uid != null",
-    "create": "get('system_roles').where('user_id == auth.uid && role == \"super_admin\"').count() > 0",
-    "update": "get('system_roles').where('user_id == auth.uid && role == \"super_admin\"').count() > 0",
-    "delete": "get('system_roles').where('user_id == auth.uid && role == \"super_admin\"').count() > 0"
+    "create": true,
+    "update": false,
+    "delete": false
   }
 }

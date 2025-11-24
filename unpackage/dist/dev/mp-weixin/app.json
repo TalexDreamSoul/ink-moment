@@ -1,13 +1,11 @@
 {
   "pages": [
-    "pages/home/index",
-    "pages/welcome/index",
+    "pages/welcome/welcome",
+    "pages/clock/clock",
+    "pages/profile/profile",
     "pages/auth/login",
     "pages/auth/profile-edit",
-    "pages/work/records",
-    "pages/work/detail",
     "pages/volunteer/statistics",
-    "pages/volunteer/export",
     "pages/organization/list",
     "pages/organization/join",
     "pages/organization/detail",
@@ -37,48 +35,39 @@
     "pages/reminder/settings",
     "pages/reminder/history",
     "pages/verify/check",
-    "pages/profile/index",
-    "pages/home/home",
-    "pages/cloudFunction/cloudFunction",
-    "pages/cloudObject/cloudObject",
-    "pages/secure-network/cloud-function",
-    "pages/secure-network/cloud-object",
-    "pages/test/test",
-    "pages/clientDB/unicloud-db-demo/unicloud-db-demo",
-    "pages/clientDB/demo/demo",
-    "pages/clientDB/permission-table-simple/permission-table-simple",
-    "pages/clientDB/permission-table-compound/permission-table-compound",
-    "pages/clientDB/clientDB",
-    "pages/user-info/add",
-    "pages/user-info/edit",
-    "pages/user-info/list",
-    "pages/user-info/detail",
-    "pages/storage/storage",
-    "pages/storage/space-storage",
-    "pages/storage/ext-storage-qiniu",
-    "pages/schema2code/schema2code",
-    "pages/clientDB/permission/permission",
-    "pages/clientDB/permission-demo/permission-demo",
-    "pages/clientDB/permission-demo/readme",
-    "pages/clientDB/permission-field-simple/permission-field-simple",
-    "pages/clientDB/clientDB-api/clientDB-api",
-    "pages/clientDB/validate/validate",
-    "pages/validate-demo/add",
-    "pages/validate-demo/edit",
-    "pages/validate-demo/list",
-    "pages/validate-demo/detail",
-    "pages/webview/webview",
-    "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
-    "pages/cloudFunction/redis/redis",
-    "uni_modules/uni-upgrade-center/pages/version/list",
-    "uni_modules/uni-upgrade-center/pages/version/add",
-    "uni_modules/uni-upgrade-center/pages/version/detail"
+    "uni_modules/uni-upgrade-center-app/pages/upgrade-popup"
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
+    "navigationBarTitleText": "溯间砚时",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/welcome/welcome",
+        "text": "总览",
+        "iconPath": "static/tabbar/fn.png",
+        "selectedIconPath": "static/tabbar/fn1.png"
+      },
+      {
+        "pagePath": "pages/clock/clock",
+        "text": "打卡",
+        "iconPath": "static/tabbar/yun.png",
+        "selectedIconPath": "static/tabbar/yun1.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "个人信息",
+        "iconPath": "static/tabbar/obj.png",
+        "selectedIconPath": "static/tabbar/obj1.png"
+      }
+    ]
   },
   "permission": {
     "scope.userLocation": {

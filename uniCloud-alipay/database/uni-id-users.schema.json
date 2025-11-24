@@ -1,0 +1,35 @@
+{
+    "bsonType": "object",
+    "required": [
+        "wx_openid"
+    ],
+    "permission": {
+        "read": "auth.uid != null",
+        "create": false,
+        "update": "doc._id == auth.uid",
+        "delete": false
+    },
+    "properties": {
+        "_id": {
+            "description": "用户ID"
+        },
+        "wx_openid": {
+            "bsonType": "object",
+            "description": "微信openid",
+            "properties": {
+                "mp": {
+                    "bsonType": "string",
+                    "description": "小程序openid"
+                }
+            }
+        },
+        "created_at": {
+            "bsonType": "number",
+            "description": "创建时间戳"
+        },
+        "updated_at": {
+            "bsonType": "number",
+            "description": "更新时间戳"
+        }
+    }
+}

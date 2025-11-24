@@ -37,7 +37,7 @@ async function wxLogin(userInfo) {
     const token = 'token_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9)
     
     // 检查用户是否已填写个人信息
-    const profileResult = await db.collection('user_profiles')
+    const profileResult = await db.collection('user-profiles')
       .where({
         user_id: uid
       })
@@ -71,7 +71,7 @@ async function wxLogin(userInfo) {
 async function getUserProfile(uid) {
   try {
     const db = uniCloud.database()
-    const result = await db.collection('user_profiles')
+    const result = await db.collection('user-profiles')
       .where({
         user_id: uid
       })
@@ -106,7 +106,7 @@ async function updateUserProfile(uid, profileData) {
     
     // 检查学号是否已存在
     if (profileData.student_id) {
-      const existingUser = await db.collection('user_profiles')
+      const existingUser = await db.collection('user-profiles')
         .where({
           student_id: profileData.student_id,
           user_id: db.command.neq(uid)
@@ -122,7 +122,7 @@ async function updateUserProfile(uid, profileData) {
     }
     
     // 检查是否已存在用户信息
-    const existingProfile = await db.collection('user_profiles')
+    const existingProfile = await db.collection('user-profiles')
       .where({
         user_id: uid
       })
@@ -144,12 +144,12 @@ async function updateUserProfile(uid, profileData) {
     let result
     if (existingProfile.data.length > 0) {
       // 更新现有记录
-      result = await db.collection('user_profiles')
+      result = await db.collection('user-profiles')
         .doc(existingProfile.data[0]._id)
         .update(updateData)
     } else {
       // 创建新记录
-      result = await db.collection('user_profiles')
+      result = await db.collection('user-profiles')
         .add({
           user_id: uid,
           ...updateData,

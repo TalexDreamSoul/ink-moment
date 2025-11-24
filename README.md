@@ -166,6 +166,11 @@ pages/
 2. 导入database目录下的schema文件
 3. 配置数据库权限
 
+### 命名规范与部署提醒
+- **集合命名必须使用连字符**（如`work-records`、`system-roles`、`attendance-statistics`），前端/云函数的`db.collection`调用已经全部同步成连字符写法。上传schema时也要保持一致，否则clientDB会直接报错。
+- 修改/新增集合后，记得重新在HBuilderX里右键`uniCloud`目录选择“上传schema”来同步结构，否则本地写死的权限校验会与线上不一致。
+- 所有打卡相关云函数（`work-clock`）现在会主动校验`uni-id`的token，前端调用`uniCloud.callFunction`时需要把`token: uni.getStorageSync('token')`一起传过去，确保`event.uniIdToken`或`event.token`至少有一个能被云端识别。
+
 ### 微信小程序发布
 1. 在微信开发者工具中预览
 2. 上传代码到微信后台

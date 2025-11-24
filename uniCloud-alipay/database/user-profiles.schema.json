@@ -1,6 +1,15 @@
 {
   "bsonType": "object",
-  "required": ["user_id", "name", "student_id", "college", "grade_major", "phone", "counselor"],
+  "required": [
+    "user_id",
+    "name",
+    "student_id",
+    "college",
+    "grade_major",
+    "phone",
+    "counselor",
+    "gender"
+  ],
   "properties": {
     "_id": {
       "description": "ID，系统自动生成"
@@ -59,7 +68,11 @@
       "bsonType": "string",
       "description": "性别",
       "title": "性别",
-      "enum": ["male", "female", "other"],
+      "enum": [
+        "male",
+        "female",
+        "other"
+      ],
       "defaultValue": "other"
     },
     "meta": {

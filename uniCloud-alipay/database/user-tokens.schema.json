@@ -1,0 +1,35 @@
+{
+    "bsonType": "object",
+    "required": [
+        "user_id",
+        "token"
+    ],
+    "permission": {
+        "read": "doc.user_id == auth.uid",
+        "create": true,
+        "update": false,
+        "delete": "doc.user_id == auth.uid"
+    },
+    "properties": {
+        "_id": {
+            "description": "ID"
+        },
+        "user_id": {
+            "bsonType": "string",
+            "description": "用户ID",
+            "foreignKey": "uni-id-users._id"
+        },
+        "token": {
+            "bsonType": "string",
+            "description": "访问令牌"
+        },
+        "created_at": {
+            "bsonType": "number",
+            "description": "创建时间戳"
+        },
+        "expired_at": {
+            "bsonType": "number",
+            "description": "过期时间戳"
+        }
+    }
+}

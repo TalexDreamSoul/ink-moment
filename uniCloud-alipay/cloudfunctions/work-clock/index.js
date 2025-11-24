@@ -1,18 +1,54 @@
 'use strict';
 
+// 简单的 token 验证
+async function checkToken(db, token) {
+  if (!token) return null
+
+  const result = await db.collection('user-tokens').where({ token }).get()
+  if (result.data.length === 0) return null
+
+  const tokenData = result.data[0]
+  // 检查 token 是否过期（7天）
+  const now = Date.now()
+  if (now - tokenData.created_at > 7 * 24 * 60 * 60 * 1000) {
+    return null
+  }
+
+  return tokenData.user_id
+}
+
 exports.main = async (event, context) => {
   const { action, location, recordId } = event
-  
+  const db = uniCloud.database()
+
   try {
+    // 从多个来源读取 token
+    const token = event.uniIdToken ||
+      event.token ||
+      (context && context.headers && (context.headers['uni-id-token'] || context.headers['x-token'] || context.headers['token']))
+
+    const userId = await checkToken(db, token)
+
+    if (!userId) {
+      return {
+        code: 401,
+        message: '请先登录'
+      }
+    }
+
     switch (action) {
       case 'clockIn':
-        return await clockIn(event.userInfo.uid, location)
+        return await clockIn(userId, location, db, event.orgId)
       case 'clockOut':
-        return await clockOut(recordId, location)
+        return await clockOut(userId, recordId, location, db)
       case 'getTodayRecords':
-        return await getTodayRecords(event.userInfo.uid)
+        return await getTodayRecords(userId, db)
       case 'getWorkDuration':
-        return await getWorkDuration(event.userInfo.uid)
+        return await getWorkDuration(userId, db)
+      case 'getRecentRecords':
+        return await getRecentRecords(userId, db)
+      case 'getCurrentStatus':
+        return await getCurrentStatus(userId, db)
       default:
         return {
           code: 400,
@@ -29,65 +65,137 @@ exports.main = async (event, context) => {
   }
 }
 
-// 上班打卡
-async function clockIn(userId, location) {
+// 获取当前打卡状态
+async function getCurrentStatus(userId, db) {
   try {
-    const db = uniCloud.database()
-    const now = new Date()
-    
-    // 检查今天是否已经打卡
+    const cmd = db.command
+
+    // 1. 查找当前正在进行的记录（全局查找，不限组织，不限时间）
+    const activeRecords = await db.collection('work-records')
+      .where({
+        user_id: userId,
+        clock_out_time: cmd.exists(false)
+      })
+      .orderBy('clock_in_time', 'desc')
+      .limit(1)
+      .get()
+
+    if (activeRecords.data.length > 0) {
+      return {
+        code: 0,
+        message: '获取成功',
+        data: activeRecords.data[0]
+      }
+    }
+
+    // 2. 如果没有进行中的记录，查找今天最近的一条记录
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
-    const existingRecord = await db.collection('work_records')
+
+    const todayRecords = await db.collection('work-records')
       .where({
         user_id: userId,
-        clock_in_time: db.command.gte(today).and(db.command.lt(tomorrow)),
-        clock_out_time: db.command.exists(false)
+        clock_in_time: cmd.gte(today.getTime()).and(cmd.lt(tomorrow.getTime()))
       })
+      .orderBy('clock_in_time', 'desc')
+      .limit(1)
       .get()
-    
-    if (existingRecord.data.length > 0) {
+
+    return {
+      code: 0,
+      message: '获取成功',
+      data: todayRecords.data.length > 0 ? todayRecords.data[0] : null
+    }
+
+  } catch (error) {
+    console.error('getCurrentStatus error:', error)
+    return {
+      code: 500,
+      message: '获取状态失败',
+      error: error.message
+    }
+  }
+}
+
+// 上班打卡
+async function clockIn(userId, location, db, orgId) {
+  try {
+    const now = new Date()
+
+    // 检查 orgId 是否提供
+    if (!orgId) {
       return {
         code: 400,
-        message: '今日已上班打卡，请先下班打卡'
+        message: '请选择要打卡的组织'
       }
     }
-    
-    // 获取用户所属组织
-    const orgMembers = await db.collection('organization_members')
+
+    // 检查用户是否是该组织的成员
+    console.log('Checking membership for user:', userId, 'org:', orgId)
+    const memberResult = await db.collection('organization-members')
       .where({
+        org_id: orgId,
         user_id: userId,
         status: 'active'
       })
       .get()
-    
-    if (orgMembers.data.length === 0) {
+    console.log('Membership check result:', memberResult.data.length)
+
+    if (memberResult.data.length === 0) {
       return {
-        code: 400,
-        message: '您还未加入任何组织，请联系管理员'
+        code: 403,
+        message: '您不是该组织的成员，无法打卡'
       }
     }
-    
+
+    // 全局检查是否有正在进行的打卡记录（不限组织，不限时间）
+    // 只要有未结束的打卡，就不允许新开
+    const cmd = db.command
+    const activeRecord = await db.collection('work-records')
+      .where({
+        user_id: userId,
+        clock_out_time: cmd.exists(false)
+      })
+      .get()
+
+    console.log('Active records check result:', activeRecord.data.length)
+
+    if (activeRecord.data.length > 0) {
+      const record = activeRecord.data[0]
+      // 如果是同一个组织的，提示已上班
+      if (record.org_id === orgId) {
+        return {
+          code: 400,
+          message: '您当前已在上班中，请先下班'
+        }
+      } else {
+        // 如果是其他组织的，提示先结束那边的
+        return {
+          code: 400,
+          message: '您在其他组织有未结束的打卡，请先结束该记录'
+        }
+      }
+    }
+
     // 创建打卡记录
     const recordData = {
       user_id: userId,
-      org_id: orgMembers.data[0].org_id, // 使用第一个组织
+      org_id: orgId,
       clock_in_time: now,
       clock_in_location: {
         latitude: location.latitude,
         longitude: location.longitude,
-        address: location.address
+        address: location.address || ''
       },
       status: 'ongoing',
       audit_status: 'pending',
       created_at: now
     }
-    
-    const result = await db.collection('work_records').add(recordData)
-    
+
+    const result = await db.collection('work-records').add(recordData)
+
     return {
       code: 0,
       message: '上班打卡成功',
@@ -100,46 +208,52 @@ async function clockIn(userId, location) {
     console.error('clockIn error:', error)
     return {
       code: 500,
-      message: '上班打卡失败',
+      message: '上班打卡失败: ' + error.message,
       error: error.message
     }
   }
 }
 
 // 下班打卡
-async function clockOut(recordId, location) {
+async function clockOut(userId, recordId, location, db) {
   try {
-    const db = uniCloud.database()
     const now = new Date()
-    
+
     // 获取打卡记录
-    const recordResult = await db.collection('work_records')
+    const recordResult = await db.collection('work-records')
       .doc(recordId)
       .get()
-    
+
     if (recordResult.data.length === 0) {
       return {
         code: 404,
         message: '打卡记录不存在'
       }
     }
-    
+
     const record = recordResult.data[0]
-    
+
     if (record.clock_out_time) {
       return {
         code: 400,
         message: '今日已下班打卡'
       }
     }
-    
+
+    if (record.user_id !== userId) {
+      return {
+        code: 403,
+        message: '无权操作该打卡记录'
+      }
+    }
+
     // 计算工作时长
     const clockInTime = new Date(record.clock_in_time)
     const diffSeconds = Math.floor((now - clockInTime) / 1000)
     const minutes = Math.floor(diffSeconds / 60)
     const seconds = diffSeconds % 60
     const durationMinutes = seconds >= 30 ? minutes + 1 : minutes
-    
+
     // 更新打卡记录
     const updateData = {
       clock_out_time: now,
@@ -151,14 +265,14 @@ async function clockOut(recordId, location) {
       duration_minutes: durationMinutes,
       status: 'completed'
     }
-    
-    await db.collection('work_records')
+
+    await db.collection('work-records')
       .doc(recordId)
       .update(updateData)
-    
+
     // 更新日统计
-    await updateDailyStats(record.user_id, record.org_id, durationMinutes)
-    
+    await updateDailyStats(record.user_id, record.org_id, durationMinutes, db)
+
     return {
       code: 0,
       message: '下班打卡成功',
@@ -178,22 +292,22 @@ async function clockOut(recordId, location) {
 }
 
 // 获取今日打卡记录
-async function getTodayRecords(userId) {
+async function getTodayRecords(userId, db) {
   try {
-    const db = uniCloud.database()
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
-    const result = await db.collection('work_records')
+
+    const cmd = db.command
+    const result = await db.collection('work-records')
       .where({
         user_id: userId,
-        clock_in_time: db.command.gte(today).and(db.command.lt(tomorrow))
+        clock_in_time: cmd.gte(today.getTime()).and(cmd.lt(tomorrow.getTime()))
       })
       .orderBy('clock_in_time', 'desc')
       .get()
-    
+
     return {
       code: 0,
       message: '获取成功',
@@ -210,26 +324,26 @@ async function getTodayRecords(userId) {
 }
 
 // 获取工作时长
-async function getWorkDuration(userId) {
+async function getWorkDuration(userId, db) {
   try {
-    const db = uniCloud.database()
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
-    
+
     // 获取今日所有打卡记录
-    const records = await db.collection('work_records')
+    const cmd = db.command
+    const records = await db.collection('work-records')
       .where({
         user_id: userId,
-        clock_in_time: db.command.gte(today).and(db.command.lt(tomorrow)),
+        clock_in_time: cmd.gte(today.getTime()).and(cmd.lt(tomorrow.getTime())),
         audit_status: 'approved'
       })
       .get()
-    
+
     let totalMinutes = 0
     let currentRecord = null
-    
+
     for (const record of records.data) {
       if (record.clock_out_time) {
         // 已完成的记录
@@ -244,7 +358,7 @@ async function getWorkDuration(userId) {
         totalMinutes += seconds >= 30 ? minutes + 1 : minutes
       }
     }
-    
+
     return {
       code: 0,
       message: '获取成功',
@@ -264,26 +378,57 @@ async function getWorkDuration(userId) {
   }
 }
 
-// 更新日统计
-async function updateDailyStats(userId, orgId, minutes) {
+// 获取最近打卡记录
+async function getRecentRecords(userId, db) {
   try {
-    const db = uniCloud.database()
+    const result = await db.collection('work-records')
+      .where({
+        user_id: userId
+      })
+      .orderBy('clock_in_time', 'desc')
+      .limit(5)
+      .get()
+
+    return {
+      code: 0,
+      message: '获取成功',
+      data: result.data
+    }
+  } catch (error) {
+    console.error('getRecentRecords error:', error)
+    return {
+      code: 500,
+      message: '获取最近记录失败',
+      error: error.message
+    }
+  }
+}
+
+// 更新日统计
+async function updateDailyStats(userId, orgId, minutes, db) {
+  try {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
-    
+
     // 查找今日统计记录
-    const statsResult = await db.collection('attendance_statistics')
-      .where({
-        user_id: userId,
-        org_id: orgId,
-        date: today
-      })
+    const whereCondition = {
+      user_id: userId,
+      date: today.getTime() // 使用时间戳
+    }
+
+    // 如果有组织，添加组织条件
+    if (orgId) {
+      whereCondition.org_id = orgId
+    }
+
+    const statsResult = await db.collection('attendance-statistics')
+      .where(whereCondition)
       .get()
-    
+
     if (statsResult.data.length > 0) {
       // 更新现有统计
       const stats = statsResult.data[0]
-      await db.collection('attendance_statistics')
+      await db.collection('attendance-statistics')
         .doc(stats._id)
         .update({
           total_minutes: (stats.total_minutes || 0) + minutes,
@@ -292,15 +437,21 @@ async function updateDailyStats(userId, orgId, minutes) {
         })
     } else {
       // 创建新统计
-      await db.collection('attendance_statistics').add({
+      const statsData = {
         user_id: userId,
-        org_id: orgId,
-        date: today,
+        date: today.getTime(), // 使用时间戳
         total_minutes: minutes,
         record_count: 1,
         created_at: new Date(),
         updated_at: new Date()
-      })
+      }
+
+      // 如果有组织，添加组织ID
+      if (orgId) {
+        statsData.org_id = orgId
+      }
+
+      await db.collection('attendance-statistics').add(statsData)
     }
   } catch (error) {
     console.error('updateDailyStats error:', error)

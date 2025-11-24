@@ -33,6 +33,9 @@
 </template>
 
 <script>
+import auth from '@/utils/auth.js'
+import { authAPI } from '@/utils/request.js'
+
 export default {
   data() {
     return {
@@ -52,32 +55,26 @@ export default {
         }
         
         // 调用云函数进行登录验证
-        const result = await uniCloud.callFunction({
-          name: 'user-auth',
-          data: {
-            action: 'wxLogin',
-            code: loginRes.code
-          }
-        })
+        const result = await authAPI.wxLogin(loginRes.code)
         
-        if (result.result.code === 0) {
-          const { uid, token } = result.result.data
-          
-          // 保存登录状态
-          uni.setStorageSync('uid', uid)
-          uni.setStorageSync('token', token)
-          uni.setStorageSync('isLoggedIn', true)
-          
-          // 跳转到主页面
+        const { uid, token, tokenExpired, needProfileCompletion, isFirstUser } = result
+        
+        // 保存登录状态
+        auth.saveLoginInfo({ uid, token, tokenExpired })
+        
+        // 根据信息完善状态跳转
+        if (needProfileCompletion) {
           uni.reLaunch({
-            url: '/pages/home/index'
+            url: '/pages/auth/profile-edit' + (isFirstUser ? '?firstUser=true' : '')
           })
         } else {
-          throw new Error(result.result.message || '登录失败')
+          uni.switchTab({
+            url: '/pages/welcome/welcome'
+          })
         }
         
       } catch (error) {
-        console.error('wxLogin error:', error)
+        console.error('[Login] 微信登录失败:', error)
         uni.showToast({
           title: error.message || '登录失败',
           icon: 'none',
@@ -96,8 +93,7 @@ export default {
           fail: reject
         })
       })
-    },
-    
+    }
   }
 }
 </script>
@@ -111,6 +107,7 @@ export default {
 .page {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
