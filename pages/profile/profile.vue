@@ -13,7 +13,7 @@
           <text class="user-name">点击登录</text>
           <text class="user-desc">登录后使用更多功能</text>
         </view>
-        <text class="arrow">></text>
+        <icon-arrow :size="16" />
       </view>
     </view>
     
@@ -43,7 +43,7 @@
         </view>
         <view class="qr-code">
           <text class="qr-icon">🏁</text>
-          <text class="arrow">></text>
+          <icon-arrow :size="16" />
         </view>
       </view>
     </view>
@@ -54,8 +54,8 @@
         <view class="cell-icon" style="background-color: #fa9d3b;">📊</view>
         <text class="cell-text">数据统计</text>
         <view class="cell-right">
-          <text class="cell-desc">{{ userStats.totalHours }}小时</text>
-          <text class="arrow">></text>
+          <text class="cell-desc">{{ formatHours(userStats.totalHours) }}</text>
+          <icon-arrow :size="16" />
         </view>
       </view>
     </view>
@@ -67,7 +67,7 @@
         <text class="cell-text">我的组织</text>
         <view class="cell-right">
           <text class="cell-desc" v-if="userStats.orgCount > 0">{{ userStats.orgCount }}个</text>
-          <text class="arrow">></text>
+          <icon-arrow :size="16" />
         </view>
       </view>
       <view class="cell" @click="goToNotifications">
@@ -75,7 +75,7 @@
         <text class="cell-text">通知中心</text>
         <view class="cell-right">
           <view class="badge" v-if="unreadCount > 0">{{ unreadCount }}</view>
-          <text class="arrow">></text>
+          <icon-arrow :size="16" />
         </view>
       </view>
     </view>
@@ -125,8 +125,13 @@
 <script>
 import auth from '@/utils/auth.js'
 import { authAPI } from '@/utils/request.js'
+import { formatHours, minutesToHours } from '@/utils/duration.js'
+import IconArrow from '@/components/icon-arrow/icon-arrow.vue'
 
 export default {
+  components: {
+    IconArrow
+  },
   data() {
     return {
       isLoggedIn: false,
@@ -240,6 +245,10 @@ export default {
           }
         }
       })
+    },
+    
+    formatHours(minutes) {
+      return formatHours(minutes)
     }
   }
 }
@@ -258,11 +267,12 @@ export default {
 
 /* Header Section */
 .header-section {
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 60rpx 40rpx 80rpx;
   margin-bottom: 20rpx;
   display: flex;
   align-items: center;
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.15);
 }
 
 .user-info-row {
@@ -274,13 +284,14 @@ export default {
 .avatar-box {
   width: 128rpx;
   height: 128rpx;
-  border-radius: 12rpx;
-  background-color: #f2f2f2;
+  border-radius: 16rpx;
+  background-color: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 32rpx;
   overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .avatar-text {
@@ -317,7 +328,7 @@ export default {
 .user-name {
   font-size: 40rpx;
   font-weight: 600;
-  color: #111;
+  color: #ffffff;
   margin-right: 16rpx;
 }
 
@@ -340,7 +351,7 @@ export default {
 
 .user-desc {
   font-size: 28rpx;
-  color: #7f7f7f;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .qr-code {
@@ -358,6 +369,9 @@ export default {
 .cell-group {
   background-color: #ffffff;
   margin-bottom: 20rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .cell {
@@ -365,6 +379,7 @@ export default {
   align-items: center;
   padding: 32rpx 40rpx;
   position: relative;
+  transition: background-color 0.2s ease;
 }
 
 .cell:active {
@@ -384,13 +399,14 @@ export default {
 .cell-icon {
   width: 48rpx;
   height: 48rpx;
-  border-radius: 8rpx;
+  border-radius: 10rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 32rpx;
   font-size: 28rpx;
   color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .cell-text {

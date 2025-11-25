@@ -6,7 +6,7 @@
     <!-- 头部统计卡片 -->
     <view class="stats-header">
       <view class="total-hours">
-        <text class="hours-num">{{ totalStats.totalHours || 0 }}</text>
+        <text class="hours-num">{{ minutesToHours(totalStats.totalHours) }}</text>
         <text class="hours-label">累计时长(小时)</text>
       </view>
       <view class="stats-grid">
@@ -16,7 +16,7 @@
         </view>
         <view class="stat-divider"></view>
         <view class="stat-item">
-          <text class="stat-num">{{ totalStats.thisMonth || 0 }}</text>
+          <text class="stat-num">{{ minutesToHours(totalStats.thisMonth) }}</text>
           <text class="stat-label">本月时长(h)</text>
         </view>
         <view class="stat-divider"></view>
@@ -36,7 +36,7 @@
           <text class="cell-text">{{ org.name }}</text>
           <text class="cell-desc">{{ org.recordCount }}次打卡</text>
         </view>
-        <text class="cell-value">{{ org.totalHours }}h</text>
+        <text class="cell-value">{{ minutesToHours(org.totalMinutes) }}h</text>
       </view>
     </view>
     <view v-else class="empty-state">
@@ -47,14 +47,16 @@
     <!-- 最近打卡记录 -->
     <view class="section-title">
       <text>最近打卡</text>
-      <text class="section-action" @click="goToClockRecords">查看全部 ></text>
+      <view class="section-action" @click="goToClockRecords">
+        <text>查看全部</text>
+        <icon-arrow :size="18" color="#576b95" /></view>
     </view>
     <view class="cell-group" v-if="recentRecords.length > 0">
       <view class="cell" v-for="record in recentRecords" :key="record._id">
         <view class="record-info">
           <view class="record-header">
             <text class="record-org">{{ record.orgName }}</text>
-            <text class="record-duration">{{ record.duration }}分钟</text>
+            <text class="record-duration">{{ formatDurationCompact(record.duration) }}</text>
           </view>
           <text class="record-time">{{ formatRecordTime(record) }}</text>
         </view>
@@ -71,7 +73,7 @@
         <view class="cell-icon" style="background-color: #10aeff;">📥</view>
         <text class="cell-text">数据导出</text>
         <view class="cell-right">
-          <text class="arrow">></text>
+          <icon-arrow :size="16" />
         </view>
       </view>
     </view>
@@ -81,9 +83,14 @@
 
 <script>
 import auth from '@/utils/auth.js'
+import { formatHours, formatDurationCompact, minutesToHours } from '@/utils/duration.js'
+import IconArrow from '@/components/icon-arrow/icon-arrow.vue'
 
 export default {
   name: 'VolunteerStatistics',
+  components: {
+    IconArrow
+  },
   data() {
     return {
       loading: false,
@@ -149,7 +156,7 @@ export default {
           this.organizations = (data.organizations || []).map(org => ({
             _id: org.org_id,
             name: org.org_name,
-            totalHours: Math.floor((org.total_minutes || 0) / 60),
+            totalMinutes: org.total_minutes || 0,
             recordCount: org.record_count || 0
           }))
           
@@ -203,6 +210,19 @@ export default {
       uni.navigateTo({
         url: '/pages/statistics/export'
       })
+    },
+    
+    // 时长格式化工具方法
+    formatHours(minutes) {
+      return formatHours(minutes)
+    },
+    
+    formatDurationCompact(minutes) {
+      return formatDurationCompact(minutes)
+    },
+    
+    minutesToHours(minutes) {
+      return minutesToHours(minutes)
     }
   }
 }
@@ -221,9 +241,10 @@ export default {
 
 /* 头部统计卡片 */
 .stats-header {
-  background-color: #ffffff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 48rpx 40rpx;
   margin-bottom: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.15);
 }
 
 .total-hours {
@@ -235,15 +256,16 @@ export default {
   display: block;
   font-size: 96rpx;
   font-weight: 700;
-  color: #07c160;
+  color: #ffffff;
   line-height: 1;
   margin-bottom: 16rpx;
+  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .hours-label {
   display: block;
   font-size: 28rpx;
-  color: #7f7f7f;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .stats-grid {
@@ -261,19 +283,19 @@ export default {
 .stat-num {
   font-size: 48rpx;
   font-weight: 600;
-  color: #111;
+  color: #ffffff;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
   font-size: 24rpx;
-  color: #7f7f7f;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .stat-divider {
   width: 1rpx;
   height: 48rpx;
-  background-color: #f0f0f0;
+  background-color: rgba(255, 255, 255, 0.3);
 }
 
 /* 区块标题 */
@@ -295,6 +317,9 @@ export default {
 .cell-group {
   background-color: #ffffff;
   margin-bottom: 20rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .cell {
@@ -302,6 +327,7 @@ export default {
   align-items: center;
   padding: 32rpx 40rpx;
   position: relative;
+  transition: background-color 0.2s ease;
 }
 
 .cell:active {

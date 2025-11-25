@@ -7,11 +7,11 @@ if (!Math) {
   "./pages/profile/profile.js";
   "./pages/auth/login.js";
   "./pages/auth/profile-edit.js";
-  "./pages/volunteer/statistics.js";
+  "./pages/auth/profile-complete.js";
   "./pages/organization/list.js";
-  "./pages/organization/join.js";
   "./pages/organization/detail.js";
   "./pages/organization/create.js";
+  "./pages/organization/join.js";
   "./pages/supervisor/audit-list.js";
   "./pages/supervisor/audit-detail.js";
   "./pages/supervisor/statistics.js";
@@ -37,6 +37,8 @@ if (!Math) {
   "./pages/reminder/settings.js";
   "./pages/reminder/history.js";
   "./pages/verify/check.js";
+  "./pages/volunteer/statistics.js";
+  "./pages/volunteer/export.js";
   "./uni_modules/uni-upgrade-center-app/pages/upgrade-popup.js";
 }
 const _sfc_main = {

@@ -8038,30 +8038,29 @@ const pages = [
   {
     path: "pages/profile/profile",
     style: {
-      navigationBarTitleText: "个人中心",
-      enablePullDownRefresh: true
-    }
-  },
-  {
-    path: "pages/auth/login",
-    style: {
-      navigationBarTitleText: "授权登录",
-      enablePullDownRefresh: false,
-      navigationStyle: "custom"
-    }
-  },
-  {
-    path: "pages/auth/profile-edit",
-    style: {
       navigationBarTitleText: "个人信息",
       enablePullDownRefresh: false
     }
   },
   {
-    path: "pages/volunteer/statistics",
+    path: "pages/auth/login",
     style: {
-      navigationBarTitleText: "时长统计",
-      enablePullDownRefresh: true
+      navigationBarTitleText: "登录",
+      enablePullDownRefresh: false
+    }
+  },
+  {
+    path: "pages/auth/profile-edit",
+    style: {
+      navigationBarTitleText: "编辑资料",
+      enablePullDownRefresh: false
+    }
+  },
+  {
+    path: "pages/auth/profile-complete",
+    style: {
+      navigationBarTitleText: "完善资料",
+      enablePullDownRefresh: false
     }
   },
   {
@@ -8069,13 +8068,6 @@ const pages = [
     style: {
       navigationBarTitleText: "我的组织",
       enablePullDownRefresh: true
-    }
-  },
-  {
-    path: "pages/organization/join",
-    style: {
-      navigationBarTitleText: "加入组织",
-      enablePullDownRefresh: false
     }
   },
   {
@@ -8089,6 +8081,13 @@ const pages = [
     path: "pages/organization/create",
     style: {
       navigationBarTitleText: "创建组织",
+      enablePullDownRefresh: false
+    }
+  },
+  {
+    path: "pages/organization/join",
+    style: {
+      navigationBarTitleText: "加入组织",
       enablePullDownRefresh: false
     }
   },
@@ -8269,6 +8268,20 @@ const pages = [
     }
   },
   {
+    path: "pages/volunteer/statistics",
+    style: {
+      navigationBarTitleText: "志愿统计",
+      enablePullDownRefresh: true
+    }
+  },
+  {
+    path: "pages/volunteer/export",
+    style: {
+      navigationBarTitleText: "志愿导出",
+      enablePullDownRefresh: false
+    }
+  },
+  {
     path: "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
     style: {
       disableScroll: true,
@@ -8305,21 +8318,216 @@ const tabBar = {
     {
       pagePath: "pages/profile/profile",
       text: "个人信息",
-      iconPath: "static/tabbar/obj.png",
-      selectedIconPath: "static/tabbar/obj1.png"
+      enablePullDownRefresh: true
+    },
+    {
+      path: "pages/admin/member-manage",
+      style: {
+        navigationBarTitleText: "成员管理",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/admin/supervisor-assign",
+      style: {
+        navigationBarTitleText: "指定督导",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/admin/invite-admin",
+      style: {
+        navigationBarTitleText: "邀请管理员",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/admin/init-super-admin",
+      style: {
+        navigationBarTitleText: "系统初始化",
+        enablePullDownRefresh: false,
+        navigationStyle: "custom"
+      }
+    },
+    {
+      path: "pages/invitation/create",
+      style: {
+        navigationBarTitleText: "创建邀请",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/invitation/scan",
+      style: {
+        navigationBarTitleText: "扫描邀请",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/invitation/detail",
+      style: {
+        navigationBarTitleText: "邀请详情",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/invitation/list",
+      style: {
+        navigationBarTitleText: "邀请列表",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/notification/list",
+      style: {
+        navigationBarTitleText: "通知中心",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/notification/detail",
+      style: {
+        navigationBarTitleText: "通知详情",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/notification/settings",
+      style: {
+        navigationBarTitleText: "通知设置",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/feedback/create",
+      style: {
+        navigationBarTitleText: "意见反馈",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/feedback/list",
+      style: {
+        navigationBarTitleText: "反馈列表",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/feedback/detail",
+      style: {
+        navigationBarTitleText: "反馈详情",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/statistics/charts",
+      style: {
+        navigationBarTitleText: "统计图表",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/statistics/export",
+      style: {
+        navigationBarTitleText: "数据导出",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/statistics/settings",
+      style: {
+        navigationBarTitleText: "统计设置",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/reminder/settings",
+      style: {
+        navigationBarTitleText: "提醒设置",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/reminder/history",
+      style: {
+        navigationBarTitleText: "提醒历史",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/verify/check",
+      style: {
+        navigationBarTitleText: "验证查询",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "pages/volunteer/statistics",
+      style: {
+        navigationBarTitleText: "志愿统计",
+        enablePullDownRefresh: true
+      }
+    },
+    {
+      path: "pages/volunteer/export",
+      style: {
+        navigationBarTitleText: "志愿导出",
+        enablePullDownRefresh: false
+      }
+    },
+    {
+      path: "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
+      style: {
+        disableScroll: true,
+        "app-plus": {
+          backgroundColorTop: "transparent",
+          background: "transparent",
+          titleNView: false,
+          scrollIndicator: false,
+          popGesture: "none",
+          animationType: "fade-in",
+          animationDuration: 200
+        }
+      }
     }
-  ]
-};
-const globalStyle = {
-  navigationBarTextStyle: "black",
-  navigationBarTitleText: "溯间砚时",
-  navigationBarBackgroundColor: "#F8F8F8",
-  backgroundColor: "#F8F8F8"
+  ],
+  tabBar: {
+    color: "#999999",
+    selectedColor: "#667eea",
+    backgroundColor: "#ffffff",
+    borderStyle: "black",
+    list: [
+      {
+        pagePath: "pages/welcome/welcome",
+        text: "总览",
+        iconPath: "static/tabbar/fn.png",
+        selectedIconPath: "static/tabbar/fn1.png"
+      },
+      {
+        pagePath: "pages/clock/clock",
+        text: "打卡",
+        iconPath: "static/tabbar/yun.png",
+        selectedIconPath: "static/tabbar/yun1.png"
+      },
+      {
+        pagePath: "pages/profile/profile",
+        text: "个人信息",
+        iconPath: "static/tabbar/obj.png",
+        selectedIconPath: "static/tabbar/obj1.png"
+      }
+    ]
+  },
+  globalStyle: {
+    navigationBarTextStyle: "black",
+    navigationBarTitleText: "溯间砚时",
+    navigationBarBackgroundColor: "#F8F8F8",
+    backgroundColor: "#F8F8F8",
+    navigationStyle: "custom"
+  }
 };
 const e = {
   pages,
-  tabBar,
-  globalStyle
+  tabBar
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {

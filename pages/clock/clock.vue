@@ -1,66 +1,71 @@
 <template>
   <view class="wechat-page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
+    <!-- 背景图片 -->
+    <image class="page-bg" src="/static/background/image.png" mode="aspectFill" />
     
-    <!-- 未登录状态 -->
-    <view v-if="!isLoggedIn" class="wechat-cell-group">
-      <view class="wechat-cell" @click="goToLogin">
-        <view class="wechat-cell-icon" style="background-color: #667eea;">🔐</view>
-        <text class="wechat-cell-text">登录以使用打卡</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
-        </view>
-      </view>
-    </view>
-    
-    <!-- 已登录但信息不完整 -->
-    <view v-else-if="!userProfile || !userProfile.is_completed" class="wechat-cell-group">
-      <view class="wechat-cell" @click="goToProfile">
-        <view class="wechat-cell-icon" style="background-color: #fa9d3b;">📝</view>
-        <text class="wechat-cell-text">完善个人信息</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
-        </view>
-      </view>
-    </view>
-    
-    <!-- 已登录且信息完整 -->
-    <view v-else>
-      <!-- 打卡区域 -->
-      <view class="clock-section">
-        <view class="clock-circle" :class="clockStatus.class" @click="handleClock">
-          <text class="clock-time">{{ currentTime }}</text>
-          <text class="clock-action">{{ clockStatus.buttonText }}</text>
-        </view>
-        <view class="clock-tips" v-if="currentRecord && !currentRecord.clock_out_time">
-          <text>已工作: {{ formatDuration(workDuration) }}</text>
-        </view>
-        <view class="clock-tips" v-else>
-          <text>{{ todayDate }}</text>
+    <view class="content-wrapper">
+      <!-- 状态栏占位 -->
+      <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
+      
+      <!-- 未登录状态 -->
+      <view v-if="!isLoggedIn" class="wechat-cell-group glass-effect">
+        <view class="wechat-cell" @click="goToLogin">
+          <view class="wechat-cell-icon" style="background-color: #667eea;">🔐</view>
+          <text class="wechat-cell-text">登录以使用打卡</text>
+          <view class="wechat-cell-right">
+            <text class="wechat-arrow">></text>
+          </view>
         </view>
       </view>
       
-      <!-- 最近记录 -->
-      <view class="wechat-cell-group">
-        <view class="wechat-cell">
-          <text class="wechat-cell-text" style="font-weight: 600;">最近记录</text>
-        </view>
-        <view class="wechat-cell" v-for="record in recentRecords" :key="record._id">
-          <view class="record-content">
-            <view class="record-main">
-              <text class="record-date">{{ formatRecordDate(record.clock_in_time) }}</text>
-              <text class="record-time">
-                {{ formatTime(record.clock_in_time) }} - {{ record.clock_out_time ? formatTime(record.clock_out_time) : '进行中' }}
-              </text>
-            </view>
-            <text class="record-duration">
-              {{ record.clock_out_time ? formatDuration(record.duration_minutes) : '计算中...' }}
-            </text>
+      <!-- 已登录但信息不完整 -->
+      <view v-else-if="!userProfile || !userProfile.is_completed" class="wechat-cell-group glass-effect">
+        <view class="wechat-cell" @click="goToProfile">
+          <view class="wechat-cell-icon" style="background-color: #fa9d3b;">📝</view>
+          <text class="wechat-cell-text">完善个人信息</text>
+          <view class="wechat-cell-right">
+            <text class="wechat-arrow">></text>
           </view>
         </view>
-        <view class="wechat-cell" v-if="!recentRecords || recentRecords.length === 0">
-          <text class="wechat-cell-text" style="color: #999; text-align: center;">暂无记录</text>
+      </view>
+      
+      <!-- 已登录且信息完整 -->
+      <view v-else>
+        <!-- 打卡区域 -->
+        <view class="clock-section glass-effect">
+          <view class="clock-circle" :class="clockStatus.class" @click="handleClock">
+            <text class="clock-time">{{ currentTime }}</text>
+            <text class="clock-action">{{ clockStatus.buttonText }}</text>
+          </view>
+          <view class="clock-tips" v-if="currentRecord && !currentRecord.clock_out_time">
+            <text>已工作: {{ formatDuration(workDuration) }}</text>
+          </view>
+          <view class="clock-tips" v-else>
+            <text>{{ todayDate }}</text>
+          </view>
+        </view>
+        
+        <!-- 最近记录 -->
+        <view class="wechat-cell-group glass-effect">
+          <view class="wechat-cell">
+            <text class="wechat-cell-text" style="font-weight: 600;">最近记录</text>
+          </view>
+          <view class="wechat-cell" v-for="record in recentRecords" :key="record._id">
+            <view class="record-content">
+              <view class="record-main">
+                <text class="record-date">{{ formatRecordDate(record.clock_in_time) }}</text>
+                <text class="record-time">
+                  {{ formatTime(record.clock_in_time) }} - {{ record.clock_out_time ? formatTime(record.clock_out_time) : '进行中' }}
+                </text>
+              </view>
+              <text class="record-duration">
+                {{ record.clock_out_time ? formatDuration(record.duration_minutes) : '计算中...' }}
+              </text>
+            </view>
+          </view>
+          <view class="wechat-cell" v-if="!recentRecords || recentRecords.length === 0">
+            <text class="wechat-cell-text" style="color: #999; text-align: center;">暂无记录</text>
+          </view>
         </view>
       </view>
     </view>
@@ -531,17 +536,42 @@ export default {
 /* #endif */
 
 .status-bar {
-  background-color: #ffffff;
+  background-color: transparent;
+}
+
+.page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 40rpx;
+}
+
+.glass-effect {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .clock-section {
-  background-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.85);
   padding: 60rpx 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-bottom: 20rpx;
+  border-radius: 24rpx;
+  margin: 20rpx 32rpx;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .clock-circle {
@@ -552,7 +582,7 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
 }
 
