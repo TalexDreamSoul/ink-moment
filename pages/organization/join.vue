@@ -1,7 +1,5 @@
 <template>
   <view class="page">
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <view class="page-content">
       <view class="join-container">
         <view class="join-method">
@@ -43,22 +41,15 @@ export default {
   name: 'OrganizationJoin',
   data() {
     return {
-      statusBarHeight: 0,
       inviteCode: '',
       joining: false
     }
   },
   
   onLoad() {
-    this.getStatusBarHeight()
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async joinByCode() {
       try {
         if (!this.inviteCode || this.inviteCode.trim().length !== 6) {
@@ -84,17 +75,10 @@ export default {
         })
         
         if (checkResult.result.code === 0 && !checkResult.result.data.isComplete) {
-          uni.showModal({
-            title: '需要完善资料',
-            content: '加入组织前需要完善个人信息，是否前往填写？',
-            success: (res) => {
-              if (res.confirm) {
-                const redirectUrl = `/pages/organization/join?code=${this.inviteCode}`
-                uni.navigateTo({
-                  url: `/pages/auth/profile-complete?redirect=${encodeURIComponent(redirectUrl)}`
-                })
-              }
-            }
+          // 直接跳转到完善资料页面，不需要二次确认
+          const redirectUrl = `/pages/organization/join?code=${this.inviteCode}`
+          uni.navigateTo({
+            url: `/pages/auth/profile-complete?redirect=${encodeURIComponent(redirectUrl)}`
           })
           return
         }
@@ -179,10 +163,6 @@ export default {
   background: #f5f5f5;
 }
 
-.status-bar {
-  background: #ffffff;
-}
-
 .page-content {
   padding: 40rpx 32rpx;
 }
@@ -261,7 +241,7 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: #ffffff;
 }
 

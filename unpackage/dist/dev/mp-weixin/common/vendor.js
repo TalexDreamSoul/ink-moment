@@ -7072,9 +7072,9 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "127.0.0.1,172.20.10.7,198.18.0.1,10.211.55.2,10.37.129.2";
+  const hosts = "127.0.0.1,10.131.179.102,198.18.0.1,10.211.55.2,10.37.129.2";
   const port = "8090";
-  const id = "mp-weixin_RudoJy";
+  const id = "mp-weixin__sFVNa";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8039,7 +8039,7 @@ const pages = [
     path: "pages/profile/profile",
     style: {
       navigationBarTitleText: "个人信息",
-      enablePullDownRefresh: false
+      enablePullDownRefresh: true
     }
   },
   {
@@ -8318,216 +8318,21 @@ const tabBar = {
     {
       pagePath: "pages/profile/profile",
       text: "个人信息",
-      enablePullDownRefresh: true
-    },
-    {
-      path: "pages/admin/member-manage",
-      style: {
-        navigationBarTitleText: "成员管理",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/admin/supervisor-assign",
-      style: {
-        navigationBarTitleText: "指定督导",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/admin/invite-admin",
-      style: {
-        navigationBarTitleText: "邀请管理员",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/admin/init-super-admin",
-      style: {
-        navigationBarTitleText: "系统初始化",
-        enablePullDownRefresh: false,
-        navigationStyle: "custom"
-      }
-    },
-    {
-      path: "pages/invitation/create",
-      style: {
-        navigationBarTitleText: "创建邀请",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/invitation/scan",
-      style: {
-        navigationBarTitleText: "扫描邀请",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/invitation/detail",
-      style: {
-        navigationBarTitleText: "邀请详情",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/invitation/list",
-      style: {
-        navigationBarTitleText: "邀请列表",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/notification/list",
-      style: {
-        navigationBarTitleText: "通知中心",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/notification/detail",
-      style: {
-        navigationBarTitleText: "通知详情",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/notification/settings",
-      style: {
-        navigationBarTitleText: "通知设置",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/feedback/create",
-      style: {
-        navigationBarTitleText: "意见反馈",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/feedback/list",
-      style: {
-        navigationBarTitleText: "反馈列表",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/feedback/detail",
-      style: {
-        navigationBarTitleText: "反馈详情",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/statistics/charts",
-      style: {
-        navigationBarTitleText: "统计图表",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/statistics/export",
-      style: {
-        navigationBarTitleText: "数据导出",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/statistics/settings",
-      style: {
-        navigationBarTitleText: "统计设置",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/reminder/settings",
-      style: {
-        navigationBarTitleText: "提醒设置",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/reminder/history",
-      style: {
-        navigationBarTitleText: "提醒历史",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/verify/check",
-      style: {
-        navigationBarTitleText: "验证查询",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "pages/volunteer/statistics",
-      style: {
-        navigationBarTitleText: "志愿统计",
-        enablePullDownRefresh: true
-      }
-    },
-    {
-      path: "pages/volunteer/export",
-      style: {
-        navigationBarTitleText: "志愿导出",
-        enablePullDownRefresh: false
-      }
-    },
-    {
-      path: "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
-      style: {
-        disableScroll: true,
-        "app-plus": {
-          backgroundColorTop: "transparent",
-          background: "transparent",
-          titleNView: false,
-          scrollIndicator: false,
-          popGesture: "none",
-          animationType: "fade-in",
-          animationDuration: 200
-        }
-      }
+      iconPath: "static/tabbar/obj.png",
+      selectedIconPath: "static/tabbar/obj1.png"
     }
-  ],
-  tabBar: {
-    color: "#999999",
-    selectedColor: "#667eea",
-    backgroundColor: "#ffffff",
-    borderStyle: "black",
-    list: [
-      {
-        pagePath: "pages/welcome/welcome",
-        text: "总览",
-        iconPath: "static/tabbar/fn.png",
-        selectedIconPath: "static/tabbar/fn1.png"
-      },
-      {
-        pagePath: "pages/clock/clock",
-        text: "打卡",
-        iconPath: "static/tabbar/yun.png",
-        selectedIconPath: "static/tabbar/yun1.png"
-      },
-      {
-        pagePath: "pages/profile/profile",
-        text: "个人信息",
-        iconPath: "static/tabbar/obj.png",
-        selectedIconPath: "static/tabbar/obj1.png"
-      }
-    ]
-  },
-  globalStyle: {
-    navigationBarTextStyle: "black",
-    navigationBarTitleText: "溯间砚时",
-    navigationBarBackgroundColor: "#F8F8F8",
-    backgroundColor: "#F8F8F8",
-    navigationStyle: "custom"
-  }
+  ]
+};
+const globalStyle = {
+  navigationBarTextStyle: "black",
+  navigationBarTitleText: "溯间砚时",
+  navigationBarBackgroundColor: "#F8F8F8",
+  backgroundColor: "#F8F8F8"
 };
 const e = {
   pages,
-  tabBar
+  tabBar,
+  globalStyle
 };
 var define_process_env_UNI_SECURE_NETWORK_CONFIG_default = [];
 function t(e2) {
@@ -8854,7 +8659,7 @@ class S {
 function T(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","172.20.10.7","198.18.0.1","10.211.55.2","10.37.129.2"],"servePort":7001,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","/Applications/HBuilderX.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"alipay","spaceName":"ink-moment","spaceId":"env-00jxu72ebr6l","spaceAppId":"2021004166655683","accessKey":"KOaCLhvmfjyf06ht","secretKey":"LEVNXdLsyUsmyEXb"}]') || [];
+const b = true, E = "mp-weixin", A = T(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), P = E, C = T('{"address":["127.0.0.1","10.131.179.102","198.18.0.1","10.211.55.2","10.37.129.2"],"servePort":7001,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","/Applications/HBuilderX.app/Contents/HBuilderX/plugins/unicloud/**/*.js"]}'), O = T('[{"provider":"alipay","spaceName":"ink-moment","spaceId":"env-00jxu72ebr6l","spaceAppId":"2021004166655683","accessKey":"KOaCLhvmfjyf06ht","secretKey":"LEVNXdLsyUsmyEXb"}]') || [];
 let N = "";
 try {
   N = "__UNI__10AF111";

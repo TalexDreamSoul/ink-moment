@@ -1,8 +1,5 @@
 <template>
   <view class="page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <!-- 未登录状态 -->
     <view v-if="!isLoggedIn" class="header-section" @click="goToLogin">
       <view class="user-info-row">
@@ -39,7 +36,7 @@
             <text v-if="isAdmin" class="role-tag admin">管理员</text>
             <text v-if="isSupervisor" class="role-tag supervisor">督导</text>
           </view>
-          <text class="user-desc">微信号: {{ userProfile.wechat_id || '未填写' }}</text>
+          <text class="user-desc">工号/学号: {{ userProfile.student_id || '未填写' }}</text>
         </view>
         <view class="qr-code">
           <text class="qr-icon">🏁</text>
@@ -143,13 +140,11 @@ export default {
         totalHours: 0,
         orgCount: 0
       },
-      unreadCount: 0,
-      statusBarHeight: 0
+      unreadCount: 0
     }
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     this.checkLoginStatus()
   },
   
@@ -157,12 +152,29 @@ export default {
     this.checkLoginStatus()
   },
   
+  async onPullDownRefresh() {
+    try {
+      // 重新加载用户信息
+      await this.checkLoginStatus()
+      
+      uni.showToast({
+        title: '刷新成功',
+        icon: 'success',
+        duration: 1500
+      })
+    } catch (error) {
+      console.error('[Profile] 刷新失败:', error)
+      uni.showToast({
+        title: '刷新失败',
+        icon: 'none'
+      })
+    } finally {
+      // 停止下拉刷新动画
+      uni.stopPullDownRefresh()
+    }
+  },
+  
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async checkLoginStatus() {
       try {
         this.isLoggedIn = auth.isLoggedIn()
@@ -192,7 +204,7 @@ export default {
           
           if (result.stats) {
             this.userStats.totalDays = result.stats.totalDays || 0
-            this.userStats.totalHours = result.stats.totalHours || 0
+            this.userStats.totalHours = result.stats.totalMinutes || 0  // 使用totalMinutes，前端格式化
             this.userStats.orgCount = result.stats.orgCount || 0
           }
           
@@ -261,18 +273,14 @@ export default {
   padding-bottom: 40rpx;
 }
 
-.status-bar {
-  background-color: #ffffff;
-}
-
 /* Header Section */
 .header-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #FFFFFF;
+  border-bottom: 2rpx solid #EEEEEE;
   padding: 60rpx 40rpx 80rpx;
   margin-bottom: 20rpx;
   display: flex;
   align-items: center;
-  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.15);
 }
 
 .user-info-row {
@@ -284,32 +292,32 @@ export default {
 .avatar-box {
   width: 128rpx;
   height: 128rpx;
-  border-radius: 16rpx;
-  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  background-color: #F5F5F5;
+  border: 2rpx solid #DDDDDD;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-right: 32rpx;
   overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .avatar-text {
   font-size: 48rpx;
   font-weight: 600;
-  color: #666;
+  color: #333333;
 }
 
 .avatar-img {
   width: 100%;
   height: 100%;
-  border-radius: 12rpx;
+  border-radius: 50%;
 }
 
 
 .avatar-icon {
   font-size: 64rpx;
-  color: #ccc;
+  color: #999999;
 }
 
 .info-box {
@@ -328,30 +336,33 @@ export default {
 .user-name {
   font-size: 40rpx;
   font-weight: 600;
-  color: #ffffff;
+  color: #000000;
   margin-right: 16rpx;
 }
 
 .role-tag {
   font-size: 20rpx;
-  padding: 2rpx 8rpx;
-  border-radius: 6rpx;
+  padding: 4rpx 10rpx;
+  border-radius: 4rpx;
   margin-right: 8rpx;
+  border: 1rpx solid;
 }
 
 .role-tag.admin {
-  background-color: #fa9d3b;
-  color: #fff;
+  background-color: #FFFFFF;
+  color: #000000;
+  border-color: #000000;
 }
 
 .role-tag.supervisor {
-  background-color: #07c160;
-  color: #fff;
+  background-color: #FFFFFF;
+  color: #333333;
+  border-color: #333333;
 }
 
 .user-desc {
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: #666666;
 }
 
 .qr-code {
@@ -361,7 +372,7 @@ export default {
 
 .qr-icon {
   font-size: 32rpx;
-  color: #7f7f7f;
+  color: #333333;
   margin-right: 20rpx;
 }
 

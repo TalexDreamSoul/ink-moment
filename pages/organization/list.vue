@@ -1,8 +1,5 @@
 <template>
   <view class="page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <view class="page-content">
       <!-- 头部 -->
       <view class="header">
@@ -63,13 +60,11 @@ export default {
   data() {
     return {
       loading: false,
-      organizations: [],
-      statusBarHeight: 0
+      organizations: []
     }
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     this.loadOrganizations()
   },
   
@@ -83,11 +78,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async loadOrganizations(isPullRefresh = false) {
       try {
         if (!authUtil.requireLogin()) {
@@ -176,10 +166,6 @@ export default {
 .page {
   min-height: 100vh;
   background: #f5f5f5;
-}
-
-.status-bar {
-  background: #ffffff;
 }
 
 .page-content {
@@ -277,7 +263,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   border-radius: 12rpx;
 }
 
@@ -369,7 +355,7 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: #ffffff;
 }
 

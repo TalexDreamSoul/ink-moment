@@ -1,7 +1,5 @@
 <template>
   <view class="page">
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <!-- Sticky Header -->
     <view class="sticky-header">
       <view class="org-header">
@@ -80,6 +78,7 @@
                 </view>
               </view>
               <text class="member-meta">学号: {{ member.student_id || '未填写' }}</text>
+              <text class="member-hours">贡献时长: {{ formatWorkHours(member.total_work_minutes) }}</text>
               <text class="member-meta">加入时间: {{ formatTime(member.joined_at) }}</text>
             </view>
           </view>
@@ -91,12 +90,12 @@
 
 <script>
 import authUtil from '@/utils/auth.js'
+import { formatHours } from '@/utils/duration.js'
 
 export default {
   name: 'OrganizationDetail',
   data() {
     return {
-      statusBarHeight: 0,
       scrollHeight: 0,
       orgId: '',
       organization: {},
@@ -105,7 +104,6 @@ export default {
   },
   
   onLoad(options) {
-    this.getStatusBarHeight()
     this.calculateScrollHeight()
     if (options.id) {
       this.orgId = options.id
@@ -114,11 +112,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     calculateScrollHeight() {
       const systemInfo = uni.getSystemInfoSync()
       // Total height - status bar - sticky header (approx 400rpx = 200px)
@@ -188,6 +181,10 @@ export default {
       })
     },
     
+    formatWorkHours(minutes) {
+      return formatHours(minutes || 0)
+    },
+    
     getAvatarText(name) {
       if (!name) return '?'
       return name.substring(0, 1).toUpperCase()
@@ -227,50 +224,46 @@ export default {
   flex-direction: column;
 }
 
-.status-bar {
-  background: transparent;
-}
-
 /* Sticky Header */
 .sticky-header {
   position: sticky;
   top: 0;
   z-index: 100;
   background: #ffffff;
-  border-radius: 0 0 24rpx 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  border-bottom: 1rpx solid #e5e5e5;
 }
 
 .org-header {
-  padding: 48rpx 32rpx 32rpx;
+  padding: 32rpx 32rpx 24rpx;
   text-align: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 0 0 24rpx 24rpx;
+  background: #ffffff;
+  border-bottom: 1rpx solid #f0f0f0;
 }
 
 .org-icon-large {
   display: block;
-  font-size: 80rpx;
-  margin-bottom: 16rpx;
+  font-size: 60rpx;
+  margin-bottom: 12rpx;
+  opacity: 0.8;
 }
 
 .org-name {
   display: block;
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 12rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
 }
 
 .org-desc {
   display: block;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: #666666;
   line-height: 1.4;
 }
 
 .info-section {
-  padding: 24rpx 32rpx;
+  padding: 20rpx 32rpx;
   background: #ffffff;
 }
 
@@ -278,8 +271,8 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
 }
 
 .info-item:last-child {
@@ -300,28 +293,28 @@ export default {
 /* Scrollable Content */
 .scroll-content {
   flex: 1;
-  padding: 24rpx;
+  padding: 16rpx;
 }
 
 /* Invite Code Section */
 .invite-section {
   background: #ffffff;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-radius: 8rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  border: 1rpx solid #e5e5e5;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: 700;
+  font-size: 28rpx;
+  font-weight: 600;
   color: #1a1a1a;
 }
 
@@ -333,29 +326,30 @@ export default {
 .invite-code-box {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 24rpx;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8edf3 100%);
-  border-radius: 12rpx;
-  margin-bottom: 16rpx;
+  gap: 12rpx;
+  padding: 20rpx;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  margin-bottom: 12rpx;
+  border: 1rpx solid #e5e5e5;
 }
 
 .invite-code {
   flex: 1;
-  font-size: 48rpx;
+  font-size: 40rpx;
   font-weight: 700;
-  color: #667eea;
-  letter-spacing: 8rpx;
+  color: #000000;
+  letter-spacing: 6rpx;
   font-family: 'Courier New', monospace;
 }
 
 .btn-copy {
-  padding: 16rpx 32rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 12rpx 24rpx;
+  background: #000000;
   color: #ffffff;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  font-weight: 600;
+  border-radius: 6rpx;
+  font-size: 26rpx;
+  font-weight: 500;
   border: none;
   line-height: 1;
 }
@@ -366,7 +360,7 @@ export default {
 
 .invite-hint {
   display: block;
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #999999;
   line-height: 1.5;
 }
@@ -374,38 +368,38 @@ export default {
 /* Members Section */
 .members-section {
   background: #ffffff;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-radius: 8rpx;
+  padding: 24rpx;
+  border: 1rpx solid #e5e5e5;
 }
 
 /* Loading State */
 .loading-state {
-  padding: 80rpx 0;
+  padding: 60rpx 0;
   text-align: center;
 }
 
 .loading-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #999999;
 }
 
 /* Empty State */
 .empty-state {
-  padding: 80rpx 0;
+  padding: 60rpx 0;
   text-align: center;
 }
 
 .empty-icon {
   display: block;
-  font-size: 96rpx;
-  margin-bottom: 16rpx;
+  font-size: 80rpx;
+  margin-bottom: 12rpx;
   opacity: 0.3;
 }
 
 .empty-text {
   display: block;
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #999999;
 }
 
@@ -413,27 +407,27 @@ export default {
 .members-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .member-item {
   display: flex;
   align-items: center;
-  padding: 24rpx;
-  background: #fafbfc;
-  border-radius: 12rpx;
-  transition: all 0.3s ease;
+  padding: 20rpx;
+  background: #ffffff;
+  border-radius: 8rpx;
+  border: 1rpx solid #f0f0f0;
+  transition: all 0.2s ease;
 }
 
 .member-item:active {
-  background: #f0f2f5;
-  transform: scale(0.98);
+  background: #fafafa;
 }
 
 .member-avatar {
-  width: 96rpx;
-  height: 96rpx;
-  margin-right: 24rpx;
+  width: 80rpx;
+  height: 80rpx;
+  margin-right: 20rpx;
   flex-shrink: 0;
 }
 
@@ -441,27 +435,27 @@ export default {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: #e8edf3;
+  background: #f0f0f0;
 }
 
 .avatar-placeholder {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1a1a1a;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40rpx;
-  font-weight: 700;
+  font-size: 32rpx;
+  font-weight: 600;
 }
 
 .member-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 6rpx;
   min-width: 0;
 }
 
@@ -469,11 +463,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .member-name {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 600;
   color: #1a1a1a;
   flex: 1;
@@ -483,40 +477,45 @@ export default {
 }
 
 .member-meta {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: #999999;
   line-height: 1.4;
 }
 
+.member-hours {
+  font-size: 24rpx;
+  color: #007aff;
+  font-weight: 600;
+}
+
 /* Role Badges */
 .role-badge {
-  padding: 8rpx 16rpx;
-  border-radius: 24rpx;
-  font-size: 22rpx;
-  font-weight: 600;
+  padding: 6rpx 12rpx;
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  font-weight: 500;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .role-owner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   color: #ffffff;
-  box-shadow: 0 2rpx 8rpx rgba(102, 126, 234, 0.3);
 }
 
 .role-admin {
-  background: #3b82f6;
+  background: #333333;
   color: #ffffff;
 }
 
 .role-supervisor {
-  background: #f59e0b;
+  background: #666666;
   color: #ffffff;
 }
 
 .role-user {
-  background: #e5e7eb;
-  color: #6b7280;
+  background: #e5e5e5;
+  color: #666666;
 }
 </style>
 

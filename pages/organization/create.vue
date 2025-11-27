@@ -1,7 +1,5 @@
 <template>
   <view class="page">
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <view class="page-content">
       <view class="form-container">
         <view class="form-group">
@@ -62,7 +60,6 @@ export default {
   name: 'OrganizationCreate',
   data() {
     return {
-      statusBarHeight: 0,
       submitting: false,
       formData: {
         name: '',
@@ -73,15 +70,9 @@ export default {
   },
   
   onLoad() {
-    this.getStatusBarHeight()
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async getLocation() {
       try {
         uni.showLoading({ title: '获取位置中...' })
@@ -185,10 +176,6 @@ export default {
   background: #f5f5f5;
 }
 
-.status-bar {
-  background: #ffffff;
-}
-
 .page-content {
   padding: 0;
 }
@@ -277,8 +264,9 @@ export default {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
+  background: #000000;
+  color: #FFFFFF;
+  border: 2rpx solid #000000;
 }
 
 .btn-primary[disabled] {

@@ -251,9 +251,12 @@ async function getOrganizationDetail(userId, orgId, db) {
 
         const org = orgResult.data[0]
 
-        // 获取成员列表（仅admin和supervisor可见）
+        // 获取成员列表和贡献时长
         let members = []
-        if (userRole === 'admin' || userRole === 'supervisor') {
+        const isAdmin = userRole === 'owner' || userRole === 'admin'
+
+        if (isAdmin || userRole === 'supervisor') {
+            // 管理员和督导可以看到成员列表
             const allMembersResult = await db.collection('organization-members')
                 .where({
                     org_id: orgId,
@@ -269,6 +272,38 @@ async function getOrganizationDetail(userId, orgId, db) {
                 })
                 .get()
 
+            // 如果是管理员，获取所有成员的工作时长
+            let userWorkHours = {}
+            if (isAdmin) {
+                const workRecordsResult = await db.collection('work-records')
+                    .where({
+                        org_id: orgId,
+                        status: db.command.in(['completed', 'approved'])
+                    })
+                    .get()
+
+                // 按用户分组统计
+                workRecordsResult.data.forEach(record => {
+                    if (!userWorkHours[record.user_id]) {
+                        userWorkHours[record.user_id] = 0
+                    }
+                    userWorkHours[record.user_id] += (record.duration_minutes || 0)
+                })
+            } else {
+                // 督导只能看到自己的工作时长
+                const myWorkResult = await db.collection('work-records')
+                    .where({
+                        org_id: orgId,
+                        user_id: userId,
+                        status: db.command.in(['completed', 'approved'])
+                    })
+                    .get()
+
+                const myTotalMinutes = myWorkResult.data.reduce((sum, record) =>
+                    sum + (record.duration_minutes || 0), 0)
+                userWorkHours[userId] = myTotalMinutes
+            }
+
             members = allMembersResult.data.map(member => {
                 const userProfile = usersResult.data.find(u => u.user_id === member.user_id)
                 return {
@@ -276,9 +311,38 @@ async function getOrganizationDetail(userId, orgId, db) {
                     role: member.role,
                     joined_at: member.joined_at,
                     name: userProfile ? userProfile.name : '未知',
-                    avatar: userProfile ? userProfile.avatar : ''
+                    student_id: userProfile ? userProfile.student_id : '',
+                    avatar: userProfile ? userProfile.avatar : '',
+                    total_work_minutes: userWorkHours[member.user_id] || 0
                 }
             })
+        } else {
+            // 普通成员只能看到自己的信息和工作时长
+            const memberInfo = memberResult.data[0]
+            const userProfile = await db.collection('user-profiles')
+                .doc(userId)
+                .get()
+
+            const myWorkResult = await db.collection('work-records')
+                .where({
+                    org_id: orgId,
+                    user_id: userId,
+                    status: db.command.in(['completed', 'approved'])
+                })
+                .get()
+
+            const myTotalMinutes = myWorkResult.data.reduce((sum, record) =>
+                sum + (record.duration_minutes || 0), 0)
+
+            members = [{
+                user_id: userId,
+                role: memberInfo.role,
+                joined_at: memberInfo.joined_at,
+                name: userProfile.data.length > 0 ? userProfile.data[0].name : '未知',
+                student_id: userProfile.data.length > 0 ? userProfile.data[0].student_id : '',
+                avatar: userProfile.data.length > 0 ? userProfile.data[0].avatar : '',
+                total_work_minutes: myTotalMinutes
+            }]
         }
 
         return {

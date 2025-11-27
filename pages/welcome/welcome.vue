@@ -1,82 +1,116 @@
 <template>
-  <view class="wechat-page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
-    <!-- 今日概览 (类似微信朋友圈顶部的封面图区域，但这里做成简单的白色面板) -->
-    <view class="status-card" v-if="isLoggedIn">
-      <view class="date-row">
-        <text class="date-text">{{ todayDate }}</text>
-        <text class="greeting-text">今天也要加油哦</text>
-      </view>
-      <view class="stats-row">
-        <view class="stat-box">
-          <text class="stat-num">{{ todayStats.totalMinutes }}</text>
-          <text class="stat-label">今日时长(分)</text>
+  <view class="modern-page">
+    <!-- 顶部背景区域 -->
+    <view class="header-section">
+      
+      <!-- 今日概览卡片 -->
+      <view class="overview-card" v-if="isLoggedIn">
+        <view class="date-section">
+          <text class="date-main">{{ todayDate }}</text>
+          <text class="date-greeting">{{ greetingMessage }}</text>
         </view>
-        <view class="stat-divider"></view>
-        <view class="stat-box">
-          <text class="stat-num">{{ todayStats.recordCount }}</text>
-          <text class="stat-label">打卡次数</text>
-        </view>
-        <view class="stat-divider"></view>
-        <view class="stat-box">
-          <text class="stat-num">{{ todayStats.orgCount }}</text>
-          <text class="stat-label">参与组织</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 未登录提示 -->
-    <view class="wechat-cell-group" v-if="!isLoggedIn">
-      <view class="wechat-cell" @click="goToLogin">
-        <view class="wechat-cell-icon" style="background-color: #667eea;">🔐</view>
-        <text class="wechat-cell-text">登录以开始使用</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 快捷功能列表 -->
-    <view class="wechat-cell-group">
-      <view class="wechat-cell" @click="goToStatistics">
-        <view class="wechat-cell-icon" style="background-color: #fa9d3b;">📈</view>
-        <text class="wechat-cell-text">时长统计</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
-        </view>
-      </view>
-      <view class="wechat-cell" @click="goToOrganizations">
-        <view class="wechat-cell-icon" style="background-color: #2782d7;">🏢</view>
-        <text class="wechat-cell-text">我的组织</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
+        
+        <view class="stats-grid">
+          <view class="stat-item">
+            <view class="stat-icon-wrapper stat-icon-1">
+              <text class="stat-icon">⏱</text>
+            </view>
+            <text class="stat-value">{{ formatMinutes(todayStats.totalMinutes) }}</text>
+            <text class="stat-label">志愿时长</text>
+          </view>
+          
+          <view class="stat-item">
+            <view class="stat-icon-wrapper stat-icon-2">
+              <text class="stat-icon">✓</text>
+            </view>
+            <text class="stat-value">{{ todayStats.recordCount }}</text>
+            <text class="stat-label">打卡次数</text>
+          </view>
+          
+          <view class="stat-item">
+            <view class="stat-icon-wrapper stat-icon-3">
+              <text class="stat-icon">★</text>
+            </view>
+            <text class="stat-value">{{ todayStats.orgCount }}</text>
+            <text class="stat-label">参与组织</text>
+          </view>
         </view>
       </view>
     </view>
 
-    <view class="wechat-cell-group">
-      <view class="wechat-cell" @click="goToNotifications">
-        <view class="wechat-cell-icon" style="background-color: #fa5151;">🔔</view>
-        <text class="wechat-cell-text">通知中心</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
+    <!-- 功能区域 -->
+    <view class="content-section">
+      <!-- 未登录提示 -->
+      <view class="action-card login-card" v-if="!isLoggedIn" @click="goToLogin">
+        <view class="login-content">
+          <view class="login-icon">🔐</view>
+          <view class="login-text-wrapper">
+            <text class="login-title">开始你的志愿之旅</text>
+            <text class="login-subtitle">登录以记录每一刻美好时光</text>
+          </view>
+        </view>
+        <text class="action-arrow">›</text>
+      </view>
+
+      <!-- 快捷功能卡片 -->
+      <view class="quick-actions">
+        <view class="action-card" @click="goToStatistics">
+          <view class="action-left">
+            <view class="action-icon gradient-1">
+              <text class="icon-text">📊</text>
+            </view>
+            <view class="action-text">
+              <text class="action-title">时长统计</text>
+              <text class="action-desc" v-if="isLoggedIn && totalStats.totalMinutes > 0">累计 {{ formatTotalDuration() }} · {{ totalStats.totalDays }} 天</text>
+              <text class="action-desc" v-else>查看你的志愿历程</text>
+            </view>
+          </view>
+          <text class="action-arrow">›</text>
+        </view>
+
+        <view class="action-card" @click="goToOrganizations">
+          <view class="action-left">
+            <view class="action-icon gradient-2">
+              <text class="icon-text">🏢</text>
+            </view>
+            <view class="action-text">
+              <text class="action-title">我的组织</text>
+              <text class="action-desc" v-if="isLoggedIn && totalStats.orgCount > 0">已加入 {{ totalStats.orgCount }} 个组织</text>
+              <text class="action-desc" v-else>管理组织信息</text>
+            </view>
+          </view>
+          <text class="action-arrow">›</text>
+        </view>
+
+        <view class="action-card" @click="goToNotifications">
+          <view class="action-left">
+            <view class="action-icon gradient-3">
+              <text class="icon-text">🔔</text>
+            </view>
+            <view class="action-text">
+              <text class="action-title">通知中心</text>
+              <text class="action-desc" v-if="isLoggedIn && unreadCount > 0">{{ unreadCount }} 条未读消息</text>
+              <text class="action-desc" v-else>查看最新动态</text>
+            </view>
+          </view>
+          <text class="action-arrow">›</text>
+        </view>
+
+        <!-- 管理员入口 -->
+        <view class="action-card" v-if="isAdmin" @click="goToAdmin">
+          <view class="action-left">
+            <view class="action-icon gradient-4">
+              <text class="icon-text">⚙️</text>
+            </view>
+            <view class="action-text">
+              <text class="action-title">管理员入口</text>
+              <text class="action-desc">系统管理与配置</text>
+            </view>
+          </view>
+          <text class="action-arrow">›</text>
         </view>
       </view>
     </view>
-
-    <!-- 管理员入口 -->
-    <view class="wechat-cell-group" v-if="isAdmin">
-      <view class="wechat-cell" @click="goToAdmin">
-        <view class="wechat-cell-icon" style="background-color: #7bb32e;">🔧</view>
-        <text class="wechat-cell-text">管理员入口</text>
-        <view class="wechat-cell-right">
-          <text class="wechat-arrow">></text>
-        </view>
-      </view>
-    </view>
-
   </view>
 </template>
 
@@ -97,24 +131,76 @@ export default {
       isAdmin: false,
       isSupervisor: false,
       todayDate: '',
-      statusBarHeight: 0
+      greetingMessage: '',
+      totalStats: {
+        totalDays: 0,
+        totalMinutes: 0,
+        totalHours: 0,
+        orgCount: 0
+      },
+      unreadCount: 0
     }
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     this.checkLoginStatus()
     this.updateTodayDate()
+    this.updateGreeting()
   },
   
   onShow() {
     if (this.isLoggedIn) {
-      this.checkProfileCompletion()
       this.loadUserData()
     }
   },
   
   methods: {
+    formatMinutes(minutes) {
+      if (minutes < 60) {
+        return `${minutes}分钟`
+      }
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}小时`
+    },
+    
+    formatTotalDuration() {
+      const minutes = this.totalStats.totalMinutes
+      if (minutes === 0) return ''
+      
+      if (minutes < 60) {
+        return `${minutes}分钟`
+      }
+      
+      const hours = Math.floor(minutes / 60)
+      const mins = minutes % 60
+      
+      if (mins === 0) {
+        return `${hours}小时`
+      }
+      
+      return `${hours}h${mins}分`
+    },
+    
+    updateGreeting() {
+      const hour = new Date().getHours()
+      if (hour < 6) {
+        this.greetingMessage = '夜深了，注意休息'
+      } else if (hour < 9) {
+        this.greetingMessage = '早安，新的一天加油'
+      } else if (hour < 12) {
+        this.greetingMessage = '上午好，保持活力'
+      } else if (hour < 14) {
+        this.greetingMessage = '中午好，记得休息'
+      } else if (hour < 18) {
+        this.greetingMessage = '下午好，继续加油'
+      } else if (hour < 22) {
+        this.greetingMessage = '晚上好，辛苦了'
+      } else {
+        this.greetingMessage = '夜深了，早点休息'
+      }
+    },
+    
     async checkProfileCompletion() {
       try {
         const result = await authAPI.getUserInfo()
@@ -128,10 +214,6 @@ export default {
       } catch (error) {
         console.error('[Welcome] 检查资料完成状态失败:', error)
       }
-    },
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
     },
     
     updateTodayDate() {
@@ -158,6 +240,8 @@ export default {
     async loadUserData() {
       try {
         const result = await authAPI.getUserFullInfo()
+        console.log('[Welcome] 用户完整信息:', result)
+        
         if (result && result.profile) {
           this.userProfile = result.profile
           this.isAdmin = result.roles?.isAdmin || false
@@ -167,7 +251,18 @@ export default {
             this.todayStats.totalMinutes = result.todayStats.totalMinutes || 0
             this.todayStats.recordCount = result.todayStats.recordCount || 0
             this.todayStats.orgCount = result.todayStats.orgCount || 0
+            console.log('[Welcome] 今日统计:', this.todayStats)
           }
+          
+          if (result.stats) {
+            this.totalStats.totalDays = result.stats.totalDays || 0
+            this.totalStats.totalMinutes = result.stats.totalMinutes || 0
+            this.totalStats.totalHours = result.stats.totalHours || 0
+            this.totalStats.orgCount = result.stats.orgCount || 0
+            console.log('[Welcome] 总体统计:', this.totalStats)
+          }
+          
+          this.unreadCount = result.unreadCount || 0
         }
       } catch (error) {
         console.error('[Welcome] 加载用户数据失败:', error)
@@ -202,64 +297,228 @@ export default {
 </script>
 
 <style scoped>
-/* #ifndef MP-WEIXIN */
-@import url('@/common/styles/common.css');
-/* #endif */
-
-.status-bar {
-  background-color: #ffffff;
+page {
+  background: #f5f7fa;
 }
 
-/* Status Card */
-.status-card {
-  background-color: #ffffff;
-  padding: 40rpx;
+.modern-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+/* 头部区域 */
+.header-section {
+  padding: 30rpx 30rpx 20rpx;
+}
+
+/* 概览卡片 */
+.overview-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.date-section {
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #f0f0f0;
   margin-bottom: 20rpx;
 }
 
-.date-row {
-  margin-bottom: 40rpx;
+.date-main {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
+  letter-spacing: 0.5rpx;
 }
 
-.date-text {
-  font-size: 48rpx;
-  font-weight: 600;
-  color: #111;
-  margin-right: 20rpx;
+.date-greeting {
+  font-size: 24rpx;
+  color: #999;
+  font-weight: 400;
 }
 
-.greeting-text {
-  font-size: 28rpx;
-  color: #7f7f7f;
-}
-
-.stats-row {
+/* 统计数据网格 */
+.stats-grid {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
+  gap: 16rpx;
 }
 
-.stat-box {
+.stat-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 8rpx;
 }
 
-.stat-num {
-  font-size: 40rpx;
-  font-weight: 600;
-  color: #111;
-  margin-bottom: 8rpx;
+.stat-icon-wrapper {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4rpx;
+}
+
+.stat-icon-1 {
+  background: #fa9d3b;
+}
+
+.stat-icon-2 {
+  background: #4facfe;
+}
+
+.stat-icon-3 {
+  background: #f093fb;
+}
+
+.stat-icon {
+  font-size: 32rpx;
+  filter: brightness(0) invert(1);
+}
+
+.stat-value {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #7f7f7f;
+  font-size: 20rpx;
+  color: #999;
+  font-weight: 400;
 }
 
-.stat-divider {
-  width: 1rpx;
-  height: 40rpx;
-  background-color: #f0f0f0;
+/* 内容区域 */
+.content-section {
+  padding: 0 30rpx 40rpx;
+}
+
+/* 登录卡片 */
+.login-card {
+  background: #667eea;
+  margin-bottom: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.login-content {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.login-icon {
+  font-size: 56rpx;
+}
+
+.login-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.login-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.login-subtitle {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.login-card .action-arrow {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* 快捷操作 */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.action-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.action-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+.action-left {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.action-icon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+
+.gradient-1 {
+  background: #fa9d3b;
+}
+
+.gradient-2 {
+  background: #4facfe;
+}
+
+.gradient-3 {
+  background: #f093fb;
+}
+
+.gradient-4 {
+  background: #7bb32e;
+}
+
+.icon-text {
+  filter: brightness(0) invert(1);
+}
+
+.action-text {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.action-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.action-desc {
+  font-size: 22rpx;
+  color: #999;
+}
+
+.action-arrow {
+  font-size: 48rpx;
+  color: #d0d0d0;
+  font-weight: 300;
 }
 </style>

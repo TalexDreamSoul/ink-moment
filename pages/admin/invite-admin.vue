@@ -1,8 +1,5 @@
 <template>
   <view class="page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <!-- 头部区域 -->
     <view class="header-section">
       <text class="page-title">组织邀请</text>
@@ -97,7 +94,6 @@ export default {
   },
   data() {
     return {
-      statusBarHeight: 0,
       organizations: [],
       selectedOrg: null,
       qrcodeUrl: '',
@@ -115,7 +111,6 @@ export default {
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     if (!auth.requireLogin()) {
       return
     }
@@ -130,11 +125,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async loadAdminOrganizations() {
       try {
         uni.showLoading({ title: '加载中...' })
@@ -264,10 +254,6 @@ export default {
   min-height: 100vh;
   background-color: #EDEDED;
   padding-bottom: 40rpx;
-}
-
-.status-bar {
-  background-color: #ffffff;
 }
 
 /* 头部 */

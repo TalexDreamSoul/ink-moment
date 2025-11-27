@@ -1,32 +1,20 @@
 <template>
   <view class="page">
     <view class="page-content">
-      <view class="card">
-        <view class="logo-section">
-          <image src="/static/logo.png" class="logo" mode="aspectFit" />
-          <text class="app-name">溯间砚时</text>
-          <text class="app-desc">志愿时长记录管理系统</text>
-        </view>
-        
-        <view class="login-section">
-          <button 
-            class="btn btn-primary btn-large" 
-            @tap="wxLogin"
-            :disabled="logging"
-          >
-            <text>微信授权登录</text>
-          </button>
-        </view>
-        
-        <view class="tips-section">
-          <text class="tips-title">使用说明</text>
-          <view class="tips-list">
-            <text class="tip-item">• 首次使用需要微信授权登录</text>
-            <text class="tip-item">• 登录后需要完善个人信息</text>
-            <text class="tip-item">• 支持多组织加入和管理</text>
-            <text class="tip-item">• 数据安全，隐私保护</text>
-          </view>
-        </view>
+      <view class="header">
+        <text class="app-name">溯间砚时</text>
+        <text class="app-desc">志愿时长记录管理系统</text>
+      </view>
+      
+      <view class="login-section">
+        <button 
+          class="login-btn" 
+          @tap="wxLogin"
+          :disabled="logging"
+        >
+          {{ logging ? '登录中...' : '微信授权登录' }}
+        </button>
+        <text class="login-tip">点击授权以使用完整功能</text>
       </view>
     </view>
   </view>
@@ -48,7 +36,15 @@ export default {
       try {
         this.logging = true
         
-        // 获取微信授权
+        // 先获取用户信息（必须在用户点击时同步调用）
+        let userInfo = null
+        try {
+          userInfo = await this.getWxUserInfo()
+        } catch (error) {
+          console.warn('[Login] 获取用户信息失败，继续登录流程:', error)
+        }
+        
+        // 获取微信登录凭证
         const loginRes = await this.getWxLogin()
         if (!loginRes.code) {
           throw new Error(loginRes.errMsg || '微信登录失败')
@@ -61,6 +57,15 @@ export default {
         
         // 保存登录状态
         auth.saveLoginInfo({ uid, token, tokenExpired })
+        
+        // 如果获取到了用户信息，保存到云端
+        if (userInfo) {
+          try {
+            await this.saveWxUserInfo(userInfo)
+          } catch (error) {
+            console.warn('[Login] 保存用户信息失败:', error)
+          }
+        }
         
         // 根据信息完善状态跳转
         if (needProfileCompletion) {
@@ -93,101 +98,112 @@ export default {
           fail: reject
         })
       })
+    },
+    
+    getWxUserInfo() {
+      return new Promise((resolve, reject) => {
+        // #ifdef MP-WEIXIN
+        uni.getUserProfile({
+          desc: '用于完善用户资料',
+          success: (res) => {
+            resolve(res.userInfo)
+          },
+          fail: reject
+        })
+        // #endif
+        
+        // #ifndef MP-WEIXIN
+        uni.getUserInfo({
+          success: (res) => {
+            resolve(res.userInfo)
+          },
+          fail: reject
+        })
+        // #endif
+      })
+    },
+    
+    async saveWxUserInfo(userInfo) {
+      try {
+        await authAPI.updateProfile({
+          avatar_url: userInfo.avatarUrl,
+          nickname: userInfo.nickName
+        })
+      } catch (error) {
+        console.error('[Login] 保存用户信息失败:', error)
+        throw error
+      }
     }
   }
 }
 </script>
 
 <style scoped>
-/* #ifndef MP-WEIXIN */
-@import url('@/common/styles/common.css');
-/* #endif */
-
-/* 登录页面特殊样式 */
 .page {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #FFFFFF;
   min-height: 100vh;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
+  padding: 60rpx 40rpx;
 }
 
 .page-content {
   width: 100%;
-  max-width: 600rpx;
-}
-
-.logo-section {
+  max-width: 500rpx;
   text-align: center;
-  margin-bottom: 60rpx;
 }
 
-.logo {
-  width: 120rpx;
-  height: 120rpx;
-  margin-bottom: 30rpx;
+.header {
+  margin-bottom: 120rpx;
 }
 
 .app-name {
   display: block;
-  font-size: 48rpx;
-  font-weight: bold;
-  color: var(--text-primary);
-  margin-bottom: 20rpx;
+  font-size: 56rpx;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 16rpx;
+  letter-spacing: 2rpx;
 }
 
 .app-desc {
   display: block;
   font-size: 28rpx;
-  color: var(--text-secondary);
+  color: #999999;
 }
 
 .login-section {
-  margin-bottom: 40rpx;
-}
-
-.tips-section {
-  background: var(--bg-secondary);
-  border-radius: 16rpx;
-  padding: 32rpx;
-}
-
-.tips-title {
-  display: block;
-  font-size: 28rpx;
-  font-weight: bold;
-  color: var(--text-primary);
-  margin-bottom: 20rpx;
-}
-
-.tips-list {
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
-.tip-item {
-  font-size: 26rpx;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 10rpx;
+.login-btn {
+  width: 100%;
+  height: 96rpx;
+  background: #000000;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24rpx;
 }
 
-/* #ifdef MP-WEIXIN */
-/* WXSS 安全样式（不使用 * 通配选择器与 CSS 变量） */
-.page { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 40rpx; }
-.page-content { width: 100%; max-width: 600rpx; }
-.btn { display: flex; align-items: center; justify-content: center; border: none; border-radius: 12rpx; font-size: 28rpx; }
-.btn-large { height: 88rpx; font-size: 32rpx; border-radius: 44rpx; }
-.btn-primary { background: #007aff; color: #ffffff; }
-.logo-section { text-align: center; margin-bottom: 60rpx; }
-.logo { width: 120rpx; height: 120rpx; margin-bottom: 30rpx; }
-.app-name { color: #1a1a1a; }
-.app-desc { color: #666666; }
-.tips-section { background: #f8f9fa; border-radius: 16rpx; padding: 32rpx; }
-.tips-title { color: #1a1a1a; }
-.tip-item { color: #666666; }
-/* #endif */
+.login-btn:active {
+  opacity: 0.8;
+}
 
+.login-btn:disabled {
+  opacity: 0.4;
+}
+
+.login-tip {
+  font-size: 24rpx;
+  color: #CCCCCC;
+}
 </style>

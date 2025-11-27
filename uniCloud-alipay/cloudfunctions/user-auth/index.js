@@ -222,8 +222,8 @@ async function updateProfile(profile, token, db) {
     const requiredFields = ['name', 'student_id', 'college', 'grade_major', 'phone', 'counselor', 'gender']
     const allFieldsFilled = requiredFields.every(field => profile[field] && profile[field].toString().trim() !== '')
 
-    // 检查扩展信息（QQ、微信、邮箱至少填一个）
-    const hasContactInfo = profile.meta && (profile.meta.qq || profile.meta.wechat || profile.meta.email)
+    // 扩展信息（QQ、微信、邮箱）是可选的，不影响 is_completed 状态
+    // 只要基本信息完整，就认为资料已完善
 
     const now = Date.now()
     const profileCollection = db.collection('user-profiles')
@@ -240,7 +240,7 @@ async function updateProfile(profile, token, db) {
       ...profile,
       user_id: userId,
       updated_at: now,
-      is_completed: allFieldsFilled && hasContactInfo
+      is_completed: allFieldsFilled  // 只需基本信息完整即可
     }
 
     if (existingProfile.data.length > 0) {
@@ -346,10 +346,24 @@ async function getUserStats(token, type, db) {
         data: todayStats
       }
     } else {
-      const stats = await getStats(userId, db)
+      // 获取完整的统计数据（用于统计页面）
+      const [stats, organizations, thisMonthMinutes, recentRecords] = await Promise.all([
+        getStats(userId, db),
+        getOrganizationStats(userId, db),
+        getThisMonthMinutes(userId, db),
+        getRecentRecordsWithOrg(userId, db)
+      ])
+
       return {
         code: 0,
-        data: stats
+        data: {
+          totalHours: stats.totalMinutes || 0, // 注意：这里返回的是分钟数，前端会转换
+          totalDays: stats.totalDays || 0,
+          thisMonthHours: thisMonthMinutes || 0, // 本月分钟数
+          orgCount: stats.orgCount || 0,
+          organizations: organizations || [],
+          recentRecords: recentRecords || []
+        }
       }
     }
   } catch (error) {
@@ -424,11 +438,8 @@ async function checkProfileComplete(token, db) {
       }
     })
 
-    // 检查扩展信息（QQ、微信、邮箱至少一个）
-    const hasContactInfo = profile.meta && (profile.meta.qq || profile.meta.wechat || profile.meta.email)
-    if (!hasContactInfo) {
-      missingFields.push('联系方式(QQ/微信/邮箱至少填一个)')
-    }
+    // 扩展信息（QQ、微信、邮箱）是可选的，不影响完成状态
+    // 只检查基本必填字段即可
 
     const isComplete = missingFields.length === 0 && profile.is_completed
 
@@ -492,13 +503,15 @@ async function getStats(userId, db) {
       .get()
 
     let totalMinutes = 0
-    let totalDays = 0
+    const uniqueDates = new Set() // 使用 Set 去重日期
 
     if (statsResult.data.length > 0) {
       statsResult.data.forEach(stat => {
         totalMinutes += stat.total_minutes || 0
-        if (stat.total_minutes > 0) {
-          totalDays++
+        if (stat.total_minutes > 0 && stat.date) {
+          // 将时间戳转为日期字符串进行去重
+          const dateStr = new Date(stat.date).toDateString()
+          uniqueDates.add(dateStr)
         }
       })
     }
@@ -512,7 +525,8 @@ async function getStats(userId, db) {
       .get()
 
     return {
-      totalDays,
+      totalDays: uniqueDates.size, // 使用 Set 的大小作为天数
+      totalMinutes,  // 返回总分钟数
       totalHours: Math.floor(totalMinutes / 60),
       orgCount: orgResult.data.length
     }
@@ -520,6 +534,7 @@ async function getStats(userId, db) {
     console.error('[getStats] 错误:', error)
     return {
       totalDays: 0,
+      totalMinutes: 0,
       totalHours: 0,
       orgCount: 0
     }
@@ -584,3 +599,153 @@ async function getUnreadCount(userId, db) {
     return 0
   }
 }
+
+/**
+ * 获取各组织的统计数据
+ */
+async function getOrganizationStats(userId, db) {
+  try {
+    // 获取用户的所有考勤统计，按组织分组
+    const statsResult = await db.collection('attendance-statistics')
+      .where({ user_id: userId })
+      .get()
+
+    // 按组织ID聚合数据
+    const orgMap = new Map()
+    for (const stat of statsResult.data) {
+      if (!stat.org_id) continue
+
+      if (orgMap.has(stat.org_id)) {
+        const existing = orgMap.get(stat.org_id)
+        existing.total_minutes += stat.total_minutes || 0
+        existing.record_count += stat.record_count || 0
+      } else {
+        orgMap.set(stat.org_id, {
+          org_id: stat.org_id,
+          total_minutes: stat.total_minutes || 0,
+          record_count: stat.record_count || 0
+        })
+      }
+    }
+
+    // 获取组织名称
+    const orgIds = Array.from(orgMap.keys())
+    if (orgIds.length === 0) {
+      return []
+    }
+
+    const cmd = db.command
+    const orgsResult = await db.collection('organizations')
+      .where({
+        _id: cmd.in(orgIds)
+      })
+      .get()
+
+    // 创建组织ID到名称的映射
+    const orgNameMap = new Map()
+    orgsResult.data.forEach(org => {
+      orgNameMap.set(org._id, org.name)
+    })
+
+    // 组合结果
+    const result = []
+    for (const [orgId, stats] of orgMap.entries()) {
+      result.push({
+        org_id: orgId,
+        org_name: orgNameMap.get(orgId) || '未知组织',
+        total_minutes: stats.total_minutes,
+        record_count: stats.record_count
+      })
+    }
+
+    return result
+  } catch (error) {
+    console.error('[getOrganizationStats] 错误:', error)
+    return []
+  }
+}
+
+/**
+ * 获取本月总时长（分钟）
+ */
+async function getThisMonthMinutes(userId, db) {
+  try {
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    firstDayOfMonth.setHours(0, 0, 0, 0)
+    const firstDayTimestamp = firstDayOfMonth.getTime()
+
+    const cmd = db.command
+    const statsResult = await db.collection('attendance-statistics')
+      .where({
+        user_id: userId,
+        date: cmd.gte(firstDayTimestamp)
+      })
+      .get()
+
+    let totalMinutes = 0
+    statsResult.data.forEach(stat => {
+      totalMinutes += stat.total_minutes || 0
+    })
+
+    return totalMinutes
+  } catch (error) {
+    console.error('[getThisMonthMinutes] 错误:', error)
+    return 0
+  }
+}
+
+/**
+ * 获取最近打卡记录（带组织名称）
+ */
+async function getRecentRecordsWithOrg(userId, db) {
+  try {
+    // 获取最近10条已完成的打卡记录
+    const cmd = db.command
+    const recordsResult = await db.collection('work-records')
+      .where({
+        user_id: userId,
+        clock_out_time: cmd.exists(true)
+      })
+      .orderBy('clock_in_time', 'desc')
+      .limit(10)
+      .get()
+
+    if (recordsResult.data.length === 0) {
+      return []
+    }
+
+    // 获取所有涉及的组织ID
+    const orgIds = [...new Set(recordsResult.data.map(r => r.org_id).filter(id => id))]
+
+    if (orgIds.length === 0) {
+      return []
+    }
+
+    // 批量获取组织信息
+    const orgsResult = await db.collection('organizations')
+      .where({
+        _id: cmd.in(orgIds)
+      })
+      .get()
+
+    // 创建组织ID到名称的映射
+    const orgNameMap = new Map()
+    orgsResult.data.forEach(org => {
+      orgNameMap.set(org._id, org.name)
+    })
+
+    // 组合结果
+    return recordsResult.data.map(record => ({
+      _id: record._id,
+      org_name: orgNameMap.get(record.org_id) || '未知组织',
+      duration_minutes: record.duration_minutes || 0,
+      clock_in_time: record.clock_in_time,
+      clock_out_time: record.clock_out_time
+    }))
+  } catch (error) {
+    console.error('[getRecentRecordsWithOrg] 错误:', error)
+    return []
+  }
+}
+

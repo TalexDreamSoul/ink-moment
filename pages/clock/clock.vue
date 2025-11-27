@@ -1,70 +1,71 @@
 <template>
-  <view class="wechat-page">
-    <!-- 背景图片 -->
-    <image class="page-bg" src="/static/background/image.png" mode="aspectFill" />
+  <view class="page">
+    <!-- 未登录状态 -->
+    <view v-if="!isLoggedIn" class="cell-group">
+      <view class="cell" @click="goToLogin">
+        <view class="cell-icon" style="background-color: #000000;">🔐</view>
+        <text class="cell-text">登录以使用打卡</text>
+        <view class="cell-right">
+          <text class="arrow">></text>
+        </view>
+      </view>
+    </view>
     
-    <view class="content-wrapper">
-      <!-- 状态栏占位 -->
-      <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-      
-      <!-- 未登录状态 -->
-      <view v-if="!isLoggedIn" class="wechat-cell-group glass-effect">
-        <view class="wechat-cell" @click="goToLogin">
-          <view class="wechat-cell-icon" style="background-color: #667eea;">🔐</view>
-          <text class="wechat-cell-text">登录以使用打卡</text>
-          <view class="wechat-cell-right">
-            <text class="wechat-arrow">></text>
-          </view>
+    <!-- 已登录但信息不完整 -->
+    <view v-else-if="!userProfile || !userProfile.is_completed" class="cell-group">
+      <view class="cell" @click="goToProfile">
+        <view class="cell-icon" style="background-color: #fa9d3b;">📝</view>
+        <text class="cell-text">完善个人信息</text>
+        <view class="cell-right">
+          <text class="arrow">></text>
         </view>
       </view>
-      
-      <!-- 已登录但信息不完整 -->
-      <view v-else-if="!userProfile || !userProfile.is_completed" class="wechat-cell-group glass-effect">
-        <view class="wechat-cell" @click="goToProfile">
-          <view class="wechat-cell-icon" style="background-color: #fa9d3b;">📝</view>
-          <text class="wechat-cell-text">完善个人信息</text>
-          <view class="wechat-cell-right">
-            <text class="wechat-arrow">></text>
-          </view>
-        </view>
-      </view>
-      
-      <!-- 已登录且信息完整 -->
-      <view v-else>
-        <!-- 打卡区域 -->
-        <view class="clock-section glass-effect">
-          <view class="clock-circle" :class="clockStatus.class" @click="handleClock">
-            <text class="clock-time">{{ currentTime }}</text>
-            <text class="clock-action">{{ clockStatus.buttonText }}</text>
-          </view>
-          <view class="clock-tips" v-if="currentRecord && !currentRecord.clock_out_time">
-            <text>已工作: {{ formatDuration(workDuration) }}</text>
-          </view>
-          <view class="clock-tips" v-else>
-            <text>{{ todayDate }}</text>
-          </view>
-        </view>
-        
-        <!-- 最近记录 -->
-        <view class="wechat-cell-group glass-effect">
-          <view class="wechat-cell">
-            <text class="wechat-cell-text" style="font-weight: 600;">最近记录</text>
-          </view>
-          <view class="wechat-cell" v-for="record in recentRecords" :key="record._id">
-            <view class="record-content">
-              <view class="record-main">
-                <text class="record-date">{{ formatRecordDate(record.clock_in_time) }}</text>
-                <text class="record-time">
-                  {{ formatTime(record.clock_in_time) }} - {{ record.clock_out_time ? formatTime(record.clock_out_time) : '进行中' }}
-                </text>
-              </view>
-              <text class="record-duration">
-                {{ record.clock_out_time ? formatDuration(record.duration_minutes) : '计算中...' }}
-              </text>
+    </view>
+    
+    <!-- 已登录且信息完整 -->
+    <view v-else>
+      <!-- 打卡区域 -->
+      <view class="clock-section">
+        <view class="clock-card">
+          <view class="clock-header">
+            <text class="clock-date">{{ todayDate }}</text>
+            <view class="clock-status" v-if="currentRecord && !currentRecord.clock_out_time">
+              <view class="status-dot"></view>
+              <text class="status-text">进行中</text>
             </view>
           </view>
-          <view class="wechat-cell" v-if="!recentRecords || recentRecords.length === 0">
-            <text class="wechat-cell-text" style="color: #999; text-align: center;">暂无记录</text>
+          
+          <view class="clock-time-wrapper">
+            <text class="clock-current-time">{{ currentTime }}</text>
+          </view>
+          
+          <view class="clock-duration" v-if="currentRecord && !currentRecord.clock_out_time">
+            <text class="duration-label">已工作</text>
+            <text class="duration-value">{{ formatDuration(workDuration) }}</text>
+          </view>
+          
+          <view class="clock-button" :class="clockStatus.class" @click="handleClock">
+            <text class="button-text">{{ clockStatus.buttonText }}</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 最近记录 -->
+      <view class="cell-group" v-if="recentRecords && recentRecords.length > 0">
+        <view class="cell">
+          <text class="cell-text section-title">最近记录</text>
+        </view>
+        <view class="cell" v-for="record in recentRecords" :key="record._id">
+          <view class="record-content">
+            <view class="record-main">
+              <text class="record-date">{{ formatRecordDate(record.clock_in_time) }}</text>
+              <text class="record-time">
+                {{ formatTime(record.clock_in_time) }} - {{ record.clock_out_time ? formatTime(record.clock_out_time) : '进行中' }}
+              </text>
+            </view>
+            <text class="record-duration">
+              {{ record.clock_out_time ? formatDuration(record.duration_minutes) : '计算中...' }}
+            </text>
           </view>
         </view>
       </view>
@@ -86,7 +87,6 @@ export default {
       currentTimeTimer: null,
       todayDate: '',
       currentTime: '',
-      statusBarHeight: 0,
       organizations: [],
       selectedOrg: null
     }
@@ -117,7 +117,6 @@ export default {
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     this.checkLoginStatus()
     this.updateTodayDate()
     this.startClockTimer()
@@ -139,11 +138,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     updateTodayDate() {
       const today = new Date()
       const month = today.getMonth() + 1
@@ -531,91 +525,196 @@ export default {
 </script>
 
 <style scoped>
-/* #ifndef MP-WEIXIN */
-@import url('@/common/styles/common.css');
-/* #endif */
-
-.status-bar {
-  background-color: transparent;
+.page {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 30rpx;
+  padding-bottom: 60rpx;
 }
 
-.page-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-}
-
-.content-wrapper {
-  position: relative;
-  z-index: 1;
-  padding-bottom: 40rpx;
-}
-
-.glass-effect {
-  background-color: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
+/* Clock Section */
 .clock-section {
-  background-color: rgba(255, 255, 255, 0.85);
-  padding: 60rpx 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 20rpx;
-  border-radius: 24rpx;
-  margin: 20rpx 32rpx;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: 30rpx;
 }
 
-.clock-circle {
-  width: 300rpx;
-  height: 300rpx;
+.clock-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+
+.clock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32rpx;
+}
+
+.clock-date {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.clock-status {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
   border-radius: 50%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
+  background: #52c41a;
 }
 
-.clock-circle:active {
-  transform: scale(0.95);
+.status-text {
+  font-size: 24rpx;
+  color: #52c41a;
+  font-weight: 500;
+}
+
+.clock-time-wrapper {
+  text-align: center;
+  margin-bottom: 24rpx;
+}
+
+.clock-current-time {
+  font-size: 88rpx;
+  font-weight: 300;
+  color: #000000;
+  letter-spacing: 2rpx;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.clock-duration {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 16rpx;
+  margin-bottom: 40rpx;
+  padding: 20rpx;
+  background: #f5f7fa;
+  border-radius: 12rpx;
+}
+
+.duration-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.duration-value {
+  font-size: 32rpx;
+  color: #000000;
+  font-weight: 600;
+}
+
+.clock-button {
+  width: 100%;
+  height: 96rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.clock-button:active {
+  opacity: 0.8;
+  transform: scale(0.98);
 }
 
 .clock-in {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
+  background: #000000;
 }
 
 .clock-out {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+  background: #ffffff;
+  border: 2rpx solid #000000;
+}
+
+.button-text {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.clock-in .button-text {
   color: #ffffff;
 }
 
-.clock-time {
-  font-size: 48rpx;
-  font-weight: 600;
-  margin-bottom: 16rpx;
+.clock-out .button-text {
+  color: #000000;
 }
 
-.clock-action {
-  font-size: 32rpx;
+/* Cell Group */
+.cell-group {
+  background-color: #ffffff;
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
-.clock-tips {
-  margin-top: 40rpx;
+.cell {
+  display: flex;
+  align-items: center;
+  padding: 28rpx 32rpx;
+  position: relative;
+  transition: background-color 0.2s ease;
+}
+
+.cell:active {
+  background-color: #f7f7f7;
+}
+
+.cell:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 104rpx;
+  bottom: 0;
+  right: 0;
+  height: 1rpx;
+  background-color: #f0f0f0;
+}
+
+.cell-icon {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
   font-size: 28rpx;
-  color: #666;
+  color: #ffffff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
+.cell-text {
+  flex: 1;
+  font-size: 30rpx;
+  color: #111;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 28rpx;
+}
+
+.cell-right {
+  display: flex;
+  align-items: center;
+}
+
+.arrow {
+  font-size: 28rpx;
+  color: #b2b2b2;
+  font-family: monospace;
+}
+
+/* Record Items */
 .record-content {
   flex: 1;
   display: flex;
@@ -626,12 +725,13 @@ export default {
 .record-main {
   display: flex;
   flex-direction: column;
+  gap: 6rpx;
 }
 
 .record-date {
   font-size: 30rpx;
   color: #111;
-  margin-bottom: 8rpx;
+  font-weight: 500;
 }
 
 .record-time {
@@ -641,7 +741,7 @@ export default {
 
 .record-duration {
   font-size: 28rpx;
-  color: #667eea;
-  font-weight: 500;
+  color: #000000;
+  font-weight: 600;
 }
 </style>

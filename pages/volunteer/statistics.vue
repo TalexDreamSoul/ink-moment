@@ -1,13 +1,10 @@
 <template>
   <view class="page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <!-- 头部统计卡片 -->
     <view class="stats-header">
       <view class="total-hours">
         <text class="hours-num">{{ minutesToHours(totalStats.totalHours) }}</text>
-        <text class="hours-label">累计时长(小时)</text>
+        <text class="hours-label">累计志愿时长(小时)</text>
       </view>
       <view class="stats-grid">
         <view class="stat-item">
@@ -17,7 +14,7 @@
         <view class="stat-divider"></view>
         <view class="stat-item">
           <text class="stat-num">{{ minutesToHours(totalStats.thisMonth) }}</text>
-          <text class="stat-label">本月时长(h)</text>
+          <text class="stat-label">本月志愿时长(h)</text>
         </view>
         <view class="stat-divider"></view>
         <view class="stat-item">
@@ -44,12 +41,9 @@
       <text class="empty-text">暂无组织数据</text>
     </view>
 
-    <!-- 最近打卡记录 -->
+    <!-- 最近志愿打卡 -->
     <view class="section-title">
-      <text>最近打卡</text>
-      <view class="section-action" @click="goToClockRecords">
-        <text>查看全部</text>
-        <icon-arrow :size="18" color="#576b95" /></view>
+      <text>最近志愿打卡</text>
     </view>
     <view class="cell-group" v-if="recentRecords.length > 0">
       <view class="cell" v-for="record in recentRecords" :key="record._id">
@@ -94,7 +88,6 @@ export default {
   data() {
     return {
       loading: false,
-      statusBarHeight: 0,
       totalStats: {
         totalHours: 0,
         totalDays: 0,
@@ -107,7 +100,6 @@ export default {
   },
   
   onLoad() {
-    this.getStatusBarHeight()
     if (!auth.requireLogin()) {
       return
     }
@@ -119,11 +111,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async loadStatistics(isPullRefresh = false) {
       try {
         if (!isPullRefresh) {
@@ -200,11 +187,7 @@ export default {
       return `${month}月${day}日 ${hours}:${minutes}`
     },
     
-    goToClockRecords() {
-      uni.navigateTo({
-        url: '/pages/clock/clock'
-      })
-    },
+
     
     goToExport() {
       uni.navigateTo({
@@ -235,16 +218,12 @@ export default {
   padding-bottom: 40rpx;
 }
 
-.status-bar {
-  background-color: #ffffff;
-}
-
 /* 头部统计卡片 */
 .stats-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #FFFFFF;
+  border-bottom: 2rpx solid #EEEEEE;
   padding: 48rpx 40rpx;
   margin-bottom: 20rpx;
-  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.15);
 }
 
 .total-hours {
@@ -256,16 +235,15 @@ export default {
   display: block;
   font-size: 96rpx;
   font-weight: 700;
-  color: #ffffff;
+  color: #000000;
   line-height: 1;
   margin-bottom: 16rpx;
-  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
 .hours-label {
   display: block;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: #666666;
 }
 
 .stats-grid {
@@ -283,19 +261,19 @@ export default {
 .stat-num {
   font-size: 48rpx;
   font-weight: 600;
-  color: #ffffff;
+  color: #000000;
   margin-bottom: 8rpx;
 }
 
 .stat-label {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #666666;
 }
 
 .stat-divider {
   width: 1rpx;
   height: 48rpx;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: #DDDDDD;
 }
 
 /* 区块标题 */

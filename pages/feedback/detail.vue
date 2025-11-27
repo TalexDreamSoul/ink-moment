@@ -1,8 +1,5 @@
 <template>
   <view class="page">
-    <!-- 状态栏占位 -->
-    <view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
-    
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-state">
       <text class="loading-text">加载中...</text>
@@ -76,14 +73,12 @@ export default {
   data() {
     return {
       loading: false,
-      statusBarHeight: 0,
       feedbackId: '',
       feedback: null
     }
   },
   
   onLoad(options) {
-    this.getStatusBarHeight()
     if (!auth.requireLogin()) {
       return
     }
@@ -103,11 +98,6 @@ export default {
   },
   
   methods: {
-    getStatusBarHeight() {
-      const systemInfo = uni.getSystemInfoSync()
-      this.statusBarHeight = systemInfo.statusBarHeight || 0
-    },
-    
     async loadDetail() {
       try {
         this.loading = true
@@ -185,10 +175,6 @@ export default {
   min-height: 100vh;
   background-color: #EDEDED;
   padding-bottom: 40rpx;
-}
-
-.status-bar {
-  background-color: #ffffff;
 }
 
 .loading-state {

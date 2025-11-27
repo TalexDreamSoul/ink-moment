@@ -1,67 +1,64 @@
 <template>
-  <view class="profile-complete">
+  <view class="page">
     <view class="header">
       <text class="title">完善个人信息</text>
-      <text class="subtitle">加入组织前需要完成所有必填信息</text>
+      <text class="subtitle">{{ getSubtitle() }}</text>
     </view>
     
-    <view class="form-container">
-      <uni-forms ref="form" :model="formData" :rules="rules" label-width="120px">
-        <!-- 基本信息 -->
-        <view class="section-title">基本信息</view>
-        <uni-forms-item label="姓名" name="name" required>
-          <uni-easyinput v-model="formData.name" placeholder="请输入姓名" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="学号/工号" name="student_id" required>
-          <uni-easyinput v-model="formData.student_id" placeholder="请输入学号或工号" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="学院" name="college" required>
-          <uni-easyinput v-model="formData.college" placeholder="请输入学院" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="年级专业" name="grade_major" required>
-          <uni-easyinput v-model="formData.grade_major" placeholder="例如：2023级计算机科学与技术" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="联系方式" name="phone" required>
-          <uni-easyinput v-model="formData.phone" placeholder="请输入手机号" type="number" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="辅导员" name="counselor" required>
-          <uni-easyinput v-model="formData.counselor" placeholder="请输入辅导员姓名" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="性别" name="gender" required>
-          <radio-group @change="onGenderChange">
-            <label class="radio-item"><radio value="male" :checked="formData.gender === 'male'" />男</label>
-            <label class="radio-item"><radio value="female" :checked="formData.gender === 'female'" />女</label>
-            <label class="radio-item"><radio value="other" :checked="formData.gender === 'other'" />其他</label>
-          </radio-group>
-        </uni-forms-item>
-        
-        <!-- 扩展信息 -->
-        <view class="section-title">扩展信息（至少填写一项）</view>
-        <uni-forms-item label="QQ号" name="qq">
-          <uni-easyinput v-model="formData.meta.qq" placeholder="请输入QQ号" type="number" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="微信号" name="wechat">
-          <uni-easyinput v-model="formData.meta.wechat" placeholder="请输入微信号" />
-        </uni-forms-item>
-        
-        <uni-forms-item label="邮箱" name="email">
-          <uni-easyinput v-model="formData.meta.email" placeholder="请输入邮箱" type="email" />
-        </uni-forms-item>
-      </uni-forms>
-    </view>
+    <uni-forms ref="form" :model="formData" :rules="rules" class="form">
+      <!-- 基本信息 - 仅显示未填写的字段 -->
+      <view v-if="hasIncompleteBasicInfo" class="section-title">基本信息</view>
+      
+      <uni-forms-item v-if="!formData.name" label="姓名" name="name" required>
+        <uni-easyinput v-model="formData.name" placeholder="请输入姓名" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.student_id" label="学号/工号" name="student_id" required>
+        <uni-easyinput v-model="formData.student_id" placeholder="请输入学号或工号" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.college" label="学院" name="college" required>
+        <uni-easyinput v-model="formData.college" placeholder="请输入学院" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.grade_major" label="年级专业" name="grade_major" required>
+        <uni-easyinput v-model="formData.grade_major" placeholder="例如：2023级计算机科学与技术" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.phone" label="联系方式" name="phone" required>
+        <uni-easyinput v-model="formData.phone" placeholder="请输入手机号" type="number" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.counselor" label="辅导员" name="counselor" required>
+        <uni-easyinput v-model="formData.counselor" placeholder="请输入辅导员姓名" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!formData.gender || formData.gender === 'other'" label="性别" name="gender" required>
+        <radio-group @change="onGenderChange">
+          <label class="radio-item"><radio value="male" :checked="formData.gender === 'male'" />男</label>
+          <label class="radio-item"><radio value="female" :checked="formData.gender === 'female'" />女</label>
+        </radio-group>
+      </uni-forms-item>
+      
+      <!-- 扩展信息 - 如果基本信息已完善，显示扩展信息 -->
+      <view v-if="!hasIncompleteBasicInfo || hasExtendedInfo" class="section-title">扩展信息</view>
+      
+      <uni-forms-item v-if="!hasIncompleteBasicInfo || hasExtendedInfo" label="QQ号" name="qq">
+        <uni-easyinput v-model="formData.meta.qq" placeholder="请输入QQ号" type="number" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!hasIncompleteBasicInfo || hasExtendedInfo" label="微信号" name="wechat">
+        <uni-easyinput v-model="formData.meta.wechat" placeholder="请输入微信号" />
+      </uni-forms-item>
+      
+      <uni-forms-item v-if="!hasIncompleteBasicInfo || hasExtendedInfo" label="邮箱" name="email">
+        <uni-easyinput v-model="formData.meta.email" placeholder="请输入邮箱" type="email" />
+      </uni-forms-item>
+    </uni-forms>
     
-    <view class="submit-container">
-      <button class="submit-btn" @click="submitForm" :loading="submitting" :disabled="submitting">
-        {{ submitting ? '提交中...' : '完成' }}
-      </button>
-    </view>
+    <button class="submit-btn" @click="submitForm" :loading="submitting" :disabled="submitting">
+      {{ submitting ? '提交中...' : '保存' }}
+    </button>
   </view>
 </template>
 
@@ -103,17 +100,72 @@ export default {
     }
   },
   
+  computed: {
+    hasIncompleteBasicInfo() {
+      return !this.formData.name || 
+             !this.formData.student_id || 
+             !this.formData.college || 
+             !this.formData.grade_major || 
+             !this.formData.phone || 
+             !this.formData.counselor || 
+             !this.formData.gender ||
+             this.formData.gender === 'other'
+    },
+    hasExtendedInfo() {
+      return this.formData.meta.qq || this.formData.meta.wechat || this.formData.meta.email
+    }
+  },
+  
   onLoad(options) {
     this.redirectUrl = options.redirect || ''
     this.loadProfile()
   },
   
+  onBackPress() {
+    // 拦截返回按钮，检查信息是否完善
+    if (this.hasIncompleteBasicInfo) {
+      // 信息未完善，提示用户
+      uni.showModal({
+        title: '提示',
+        content: '信息还未完全完善，是否退出？将会丢失未保存的信息',
+        confirmText: '确定退出',
+        cancelText: '继续填写',
+        confirmColor: '#fa5151',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户确认退出
+            uni.navigateBack()
+          }
+          // res.cancel 时不做任何操作，留在当前页面
+        }
+      })
+      return true // 阻止默认返回行为
+    } else {
+      // 信息已完善，提示并退出
+      uni.showToast({
+        title: '✅ 已完善信息',
+        icon: 'success',
+        duration: 1500
+      })
+      // 允许正常返回
+      return false
+    }
+  },
+  
   methods: {
+    getSubtitle() {
+      if (this.hasIncompleteBasicInfo) {
+        return '请填写您的基本信息'
+      } else {
+        return '继续完善您的扩展信息'
+      }
+    },
+    
     async loadProfile() {
       try {
         const result = await authAPI.getUserInfo()
-        if (result.code === 0 && result.data.profile) {
-          const profile = result.data.profile
+        if (result && result.profile) {
+          const profile = result.profile
           this.formData = {
             name: profile.name || '',
             student_id: profile.student_id || '',
@@ -140,42 +192,70 @@ export default {
     
     async submitForm() {
       try {
-        await this.$refs.form.validate()
+        // 表单验证 - 只验证显示的必填字段
+        const basicFieldsToValidate = []
         
-        // 验证至少填写一项扩展信息
-        if (!this.formData.meta.qq && !this.formData.meta.wechat && !this.formData.meta.email) {
-          uni.showToast({
-            title: 'QQ、微信、邮箱至少填写一项',
-            icon: 'none'
-          })
-          return
+        if (!this.formData.name) basicFieldsToValidate.push('name')
+        if (!this.formData.student_id) basicFieldsToValidate.push('student_id')
+        if (!this.formData.college) basicFieldsToValidate.push('college')
+        if (!this.formData.grade_major) basicFieldsToValidate.push('grade_major')
+        if (!this.formData.phone) basicFieldsToValidate.push('phone')
+        if (!this.formData.counselor) basicFieldsToValidate.push('counselor')
+        if (!this.formData.gender || this.formData.gender === 'other') basicFieldsToValidate.push('gender')
+        
+        // 如果有必填字段未填写，进行验证
+        if (basicFieldsToValidate.length > 0) {
+          await this.$refs.form.validate()
         }
         
         this.submitting = true
         
-        const result = await authAPI.updateProfile(this.formData)
+        console.log('[ProfileComplete] 提交表单数据:', this.formData)
         
-        if (result.code === 0) {
-          uni.showToast({
-            title: '信息完善成功',
-            icon: 'success'
-          })
-          
-          setTimeout(() => {
-            if (this.redirectUrl) {
-              uni.redirectTo({ url: decodeURIComponent(this.redirectUrl) })
-            } else {
-              uni.switchTab({ url: '/pages/welcome/welcome' })
-            }
-          }, 1500)
-        } else {
-          throw new Error(result.message || '提交失败')
-        }
-      } catch (error) {
-        console.error('提交失败:', error)
+        const data = await authAPI.updateProfile(this.formData)
+        
+        console.log('[ProfileComplete] 提交成功，返回数据:', data)
+        
         uni.showToast({
-          title: error.message || '提交失败',
-          icon: 'none'
+          title: '✅ 保存成功',
+          icon: 'success',
+          duration: 1500
+        })
+        
+        setTimeout(() => {
+          if (this.redirectUrl) {
+            const url = decodeURIComponent(this.redirectUrl)
+            console.log('[ProfileComplete] 重定向到:', url)
+            uni.reLaunch({ 
+              url,
+              fail: (err) => {
+                console.error('[ProfileComplete] 重定向失败:', err)
+                uni.reLaunch({ url: '/pages/welcome/welcome' })
+              }
+            })
+          } else {
+            console.log('[ProfileComplete] 跳转到主页')
+            uni.reLaunch({ url: '/pages/welcome/welcome' })
+          }
+        }, 1500)
+      } catch (error) {
+        console.error('[ProfileComplete] 提交失败:', error)
+        
+        let errorMsg = '提交失败，请重试'
+        if (error.message) {
+          errorMsg = error.message
+        } else if (error.errMsg) {
+          errorMsg = error.errMsg
+        }
+        
+        if (errorMsg.includes('验证') || errorMsg.includes('rules')) {
+          errorMsg = '请检查表单信息是否填写正确'
+        }
+        
+        uni.showToast({
+          title: errorMsg,
+          icon: 'none',
+          duration: 2500
         })
       } finally {
         this.submitting = false
@@ -186,50 +266,44 @@ export default {
 </script>
 
 <style scoped>
-.profile-complete {
+page {
+  background: #fff;
+}
+
+.page {
   min-height: 100vh;
-  padding: 40rpx 20rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 0 32rpx;
+  background: #fff;
 }
 
 .header {
   text-align: center;
-  padding: 60rpx 0 40rpx;
-  background-color: #fff;
-  border-radius: 20rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  padding: 80rpx 0 60rpx;
 }
 
 .title {
   display: block;
-  font-size: 40rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 16rpx;
+  font-size: 44rpx;
+  font-weight: 500;
+  color: #000;
+  margin-bottom: 12rpx;
 }
 
 .subtitle {
   display: block;
-  font-size: 28rpx;
-  color: #666;
+  font-size: 26rpx;
+  color: #999;
 }
 
-.form-container {
-  background-color: #fff;
-  border-radius: 20rpx;
-  padding: 40rpx 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+.form {
+  margin-bottom: 60rpx;
 }
 
 .section-title {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-  margin: 30rpx 0 20rpx;
-  padding-left: 20rpx;
-  border-left: 6rpx solid #667eea;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #000;
+  margin: 48rpx 0 24rpx;
 }
 
 .section-title:first-child {
@@ -237,33 +311,30 @@ export default {
 }
 
 .radio-item {
-  margin-right: 40rpx;
+  margin-right: 48rpx;
   display: inline-flex;
   align-items: center;
-}
-
-.submit-container {
-  padding: 0 30rpx;
+  font-size: 28rpx;
+  color: #000;
 }
 
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000;
   color: #fff;
   border: none;
-  border-radius: 44rpx;
+  border-radius: 8rpx;
   font-size: 32rpx;
-  font-weight: bold;
-  box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.4);
+  font-weight: 400;
+  margin-bottom: 40rpx;
 }
 
 .submit-btn:active {
-  transform: translateY(2rpx);
-  box-shadow: 0 2rpx 10rpx rgba(102, 126, 234, 0.3);
+  opacity: 0.7;
 }
 
 .submit-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.3;
 }
 </style>
