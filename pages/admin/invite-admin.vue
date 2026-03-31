@@ -1,249 +1,231 @@
 <template>
   <view class="page">
-    <!-- 头部区域 -->
-    <view class="header-section">
-      <text class="page-title">组织邀请</text>
-      <text class="page-desc">分享二维码或链接，邀请成员加入组织</text>
+    <view class="header-card">
+      <text class="title">组织邀请</text>
+      <text class="subtitle">选择您可管理的组织，查看邀请码并复制加入路径。扫码加入可直接复用当前用户端扫码逻辑。</text>
     </view>
-    
-    <!-- 组织选择 -->
-    <view class="cell-group" v-if="organizations.length > 0">
-      <view class="cell" @click="showOrgSelector">
-        <view class="cell-icon" style="background-color: #2782d7;">🏢</view>
-        <view class="cell-content">
-          <text class="cell-text">选择组织</text>
-          <text class="cell-desc">{{ selectedOrg ? selectedOrg.name : '请选择' }}</text>
-        </view>
-        <icon-arrow :size="16" />
+
+    <view v-if="organizations.length > 0" class="selector-card" @click="selectOrganization">
+      <view>
+        <text class="selector-label">当前组织</text>
+        <text class="selector-value">{{ selectedOrg ? selectedOrg.name : '请选择组织' }}</text>
+      </view>
+      <text class="selector-arrow">›</text>
+    </view>
+
+    <view v-else class="empty-card">
+      <text class="empty-title">暂无可管理的组织</text>
+      <text class="empty-text">请先创建组织或加入一个拥有管理权限的组织。</text>
+    </view>
+
+    <view v-if="selectedOrg" class="invite-card">
+      <text class="section-title">邀请码</text>
+      <view class="code-box">
+        <text class="code-text">{{ inviteCode }}</text>
+      </view>
+      <text class="helper-text">用户端可以直接输入或扫码这个邀请码加入组织</text>
+
+      <view class="link-box">
+        <text class="link-label">加入页面路径</text>
+        <text class="link-value">{{ joinPath }}</text>
+      </view>
+
+      <view class="action-row">
+        <button class="mini-btn" @click="copyText(inviteCode)">复制邀请码</button>
+        <button class="mini-btn" @click="copyText(joinPath)">复制路径</button>
       </view>
     </view>
-    
-    <!-- 空状态 -->
-    <view v-if="!selectedOrg && organizations.length === 0" class="empty-state">
-      <text class="empty-icon">🏢</text>
-      <text class="empty-text">您还没有可管理的组织</text>
-      <text class="empty-desc">只有组织的管理员才能邀请成员</text>
-    </view>
-    
-    <!-- 二维码区域 -->
-    <view v-if="selectedOrg" class="qrcode-section">
-      <view class="qrcode-card">
-        <view class="qrcode-container">
-          <canvas 
-            v-if="qrcodeUrl"
-            canvas-id="qrcode"
-            :style="{ width: qrcodeSize + 'px', height: qrcodeSize + 'px' }"
-            class="qrcode-canvas"
-          />
-          <text v-else class="qrcode-placeholder">生成二维码中...</text>
-        </view>
-        <view class="qrcode-info">
-          <text class="org-name">{{ selectedOrg.name }}</text>
-          <text class="qrcode-tip">扫描二维码加入组织</text>
-        </view>
+
+    <view v-if="selectedOrg" class="record-card">
+      <text class="section-title">最近加入记录</text>
+
+      <view v-if="inviteRecords.length === 0" class="record-empty">
+        <text class="empty-text">最近还没有新的加入记录</text>
       </view>
-    </view>
-    
-    <!-- 邀请链接 -->
-    <view v-if="selectedOrg" class="cell-group">
-      <view class="cell">
-        <view class="cell-icon" style="background-color: #10aeff;">🔗</view>
-        <view class="cell-content">
-          <text class="cell-text">邀请链接</text>
-          <text class="cell-link">{{ inviteUrl }}</text>
-        </view>
-      </view>
-      <view class="cell" @click="copyInviteUrl">
-        <view class="cell-icon" style="background-color: #07c160;">📋</view>
-        <text class="cell-text">复制邀请链接</text>
-        <icon-arrow :size="16" />
-      </view>
-    </view>
-    
-    <!-- 邀请记录 -->
-    <view v-if="selectedOrg" class="section-header">
-      <text class="section-title">最近邀请</text>
-    </view>
-    <view v-if="selectedOrg && inviteRecords.length > 0" class="cell-group">
-      <view class="cell" v-for="record in inviteRecords" :key="record._id">
-        <view class="record-content">
-          <view class="record-main">
-            <text class="record-name">{{ record.userName || '未填写姓名' }}</text>
-            <text class="record-time">{{ formatTime(record.join_time) }}</text>
+
+      <view v-else class="record-list">
+        <view v-for="item in inviteRecords" :key="item._id" class="record-item">
+          <view>
+            <text class="record-name">{{ item.userName || '未填写姓名' }}</text>
+            <text class="record-time">{{ formatTime(item.join_time) }}</text>
           </view>
-          <view :class="['record-status', record.status]">
-            {{ formatStatus(record.status) }}
-          </view>
+          <text class="record-status">{{ formatStatus(item.status) }}</text>
         </view>
       </view>
-    </view>
-    <view v-else-if="selectedOrg" class="empty-state-small">
-      <text class="empty-text-small">暂无邀请记录</text>
     </view>
   </view>
 </template>
 
 <script>
-import IconArrow from '@/components/icon-arrow/icon-arrow.vue'
 import auth from '@/utils/auth.js'
+import { getJoinPagePath } from '@/utils/app-config.js'
 
 export default {
   name: 'InviteAdmin',
-  components: {
-    IconArrow
-  },
   data() {
     return {
       organizations: [],
       selectedOrg: null,
-      qrcodeUrl: '',
-      qrcodeSize: 420,
+      inviteCode: '',
       inviteRecords: []
     }
   },
-  
+
   computed: {
-    inviteUrl() {
-      if (!this.selectedOrg) return ''
-      // TODO: 替换为实际的小程序页面路径
-      return `pages/organization/join?orgId=${this.selectedOrg._id}&inviteCode=${this.selectedOrg.invite_code || ''}`
+    joinPath() {
+      return this.selectedOrg
+        ? getJoinPagePath(this.selectedOrg._id, this.inviteCode)
+        : ''
     }
   },
-  
+
   onLoad() {
     if (!auth.requireLogin()) {
       return
     }
-    this.loadAdminOrganizations()
+    this.loadOrganizations()
   },
-  
-  onShow() {
-    if (this.selectedOrg) {
-      this.generateQRCode()
-      this.loadInviteRecords()
-    }
-  },
-  
+
   methods: {
-    async loadAdminOrganizations() {
+    async loadOrganizations() {
       try {
-        uni.showLoading({ title: '加载中...' })
-        const token = auth.getToken()
-        
         const result = await uniCloud.callFunction({
           name: 'organization-manage',
           data: {
             action: 'getAdminOrganizations',
-            token
+            token: auth.getToken()
           }
         })
-        
-        if (result.result && result.result.code === 0) {
+
+        if (result.result.code === 0) {
           this.organizations = result.result.data || []
           if (this.organizations.length > 0) {
             this.selectedOrg = this.organizations[0]
-            await this.generateQRCode()
+            await this.refreshInviteCode()
             await this.loadInviteRecords()
           }
         } else {
           uni.showToast({
-            title: result.result?.message || '加载失败',
+            title: result.result.message || '组织列表加载失败',
             icon: 'none'
           })
         }
       } catch (error) {
-        console.error('loadAdminOrganizations error:', error)
+        console.error('loadOrganizations error:', error)
         uni.showToast({
-          title: '加载失败',
+          title: error.message || '组织列表加载失败',
           icon: 'none'
         })
-      } finally {
-        uni.hideLoading()
       }
     },
-    
-    showOrgSelector() {
-      if (this.organizations.length <= 1) return
-      
-      const itemList = this.organizations.map(org => org.name)
+
+    selectOrganization() {
+      if (this.organizations.length === 0) {
+        return
+      }
+
       uni.showActionSheet({
-        title: '选择组织',
-        itemList,
-        success: async (res) => {
-          this.selectedOrg = this.organizations[res.tapIndex]
-          await this.generateQRCode()
-          await this.loadInviteRecords()
+        itemList: this.organizations.map(item => item.name),
+        success: async ({ tapIndex }) => {
+          try {
+            this.selectedOrg = this.organizations[tapIndex]
+            await this.refreshInviteCode()
+            await this.loadInviteRecords()
+          } catch (error) {
+            console.error('selectOrganization error:', error)
+            uni.showToast({
+              title: error.message || '切换组织失败',
+              icon: 'none'
+            })
+          }
         }
       })
     },
-    
-    async generateQRCode() {
-      try {
-        // TODO: 使用 uniCloud 云函数生成小程序码
-        // 暂时使用 canvas 生成二维码
-        const qr = require('@/utils/qrcode.js')
-        const ctx = uni.createCanvasContext('qrcode', this)
-        
-        qr.api.draw(this.inviteUrl, ctx, 0, 0, this.qrcodeSize, this.qrcodeSize)
-        ctx.draw(false, () => {
-          this.qrcodeUrl = 'generated'
-        })
-      } catch (error) {
-        console.error('generateQRCode error:', error)
+
+    async refreshInviteCode() {
+      if (!this.selectedOrg) {
+        return
+      }
+
+      const result = await uniCloud.callFunction({
+        name: 'organization-manage',
+        data: {
+          action: 'getOrganizationQRCode',
+          orgId: this.selectedOrg._id,
+          token: auth.getToken()
+        }
+      })
+
+      if (result.result.code === 0) {
+        this.inviteCode = result.result.data.qrcodeKey || this.selectedOrg.invite_code || ''
+      } else {
+        throw new Error(result.result.message || '邀请码获取失败')
       }
     },
-    
+
     async loadInviteRecords() {
-      if (!this.selectedOrg) return
-      
+      if (!this.selectedOrg) {
+        return
+      }
+
       try {
-        const token = auth.getToken()
         const result = await uniCloud.callFunction({
           name: 'organization-manage',
           data: {
             action: 'getInviteRecords',
             orgId: this.selectedOrg._id,
-            token
+            token: auth.getToken()
           }
         })
-        
-        if (result.result && result.result.code === 0) {
-          this.inviteRecords = (result.result.data || []).slice(0, 10)
+
+        if (result.result.code === 0) {
+          this.inviteRecords = result.result.data || []
         }
       } catch (error) {
         console.error('loadInviteRecords error:', error)
       }
     },
-    
-    copyInviteUrl() {
+
+    copyText(value) {
+      if (!value) {
+        uni.showToast({
+          title: '暂无可复制内容',
+          icon: 'none'
+        })
+        return
+      }
+
       uni.setClipboardData({
-        data: this.inviteUrl,
+        data: value,
         success: () => {
           uni.showToast({
-            title: '链接已复制',
+            title: '已复制',
             icon: 'success'
           })
         }
       })
     },
-    
+
     formatTime(timestamp) {
-      if (!timestamp) return ''
-      const date = new Date(timestamp)
-      const month = date.getMonth() + 1
-      const day = date.getDate()
-      const hours = date.getHours().toString().padStart(2, '0')
-      const minutes = date.getMinutes().toString().padStart(2, '0')
-      return `${month}月${day}日 ${hours}:${minutes}`
-    },
-    
-    formatStatus(status) {
-      const statusMap = {
-        'pending': '待加入',
-        'accepted': '已加入',
-        'rejected': '已拒绝'
+      if (!timestamp) {
+        return ''
       }
-      return statusMap[status] || status
+
+      const date = new Date(timestamp)
+      const month = `${date.getMonth() + 1}`.padStart(2, '0')
+      const day = `${date.getDate()}`.padStart(2, '0')
+      const hour = `${date.getHours()}`.padStart(2, '0')
+      const minute = `${date.getMinutes()}`.padStart(2, '0')
+      return `${month}-${day} ${hour}:${minute}`
+    },
+
+    formatStatus(status) {
+      const labelMap = {
+        accepted: '已加入',
+        pending: '待处理',
+        rejected: '已拒绝'
+      }
+      return labelMap[status] || status || '未知'
     }
   }
 }
@@ -252,247 +234,138 @@ export default {
 <style scoped>
 .page {
   min-height: 100vh;
-  background-color: #EDEDED;
-  padding-bottom: 40rpx;
+  background: #f5f7fa;
+  padding: 24rpx;
 }
 
-/* 头部 */
-.header-section {
-  background-color: #ffffff;
-  padding: 48rpx 40rpx;
-  margin-bottom: 20rpx;
-  text-align: center;
+.header-card,
+.selector-card,
+.empty-card,
+.invite-card,
+.record-card {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 32rpx;
+  margin-bottom: 24rpx;
 }
 
-.page-title {
+.title {
   display: block;
   font-size: 40rpx;
   font-weight: 700;
-  color: #111;
-  margin-bottom: 16rpx;
-}
-
-.page-desc {
-  display: block;
-  font-size: 28rpx;
-  color: #7f7f7f;
-}
-
-/* 二维码区域 */
-.qrcode-section {
-  padding: 0 40rpx;
-  margin-bottom: 20rpx;
-}
-
-.qrcode-card {
-  background-color: #ffffff;
-  border-radius: 16rpx;
-  padding: 60rpx 40rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
-}
-
-.qrcode-container {
-  width: 420rpx;
-  height: 420rpx;
-  background-color: #f8f8f8;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 40rpx;
-  overflow: hidden;
-}
-
-.qrcode-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-.qrcode-placeholder {
-  font-size: 28rpx;
-  color: #999;
-}
-
-.qrcode-info {
-  text-align: center;
-}
-
-.org-name {
-  display: block;
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #111;
+  color: #111111;
   margin-bottom: 12rpx;
 }
 
-.qrcode-tip {
+.subtitle,
+.empty-text,
+.helper-text {
   display: block;
   font-size: 26rpx;
-  color: #7f7f7f;
+  color: #64748b;
+  line-height: 1.7;
 }
 
-/* Cell Group */
-.cell-group {
-  background-color: #ffffff;
-  margin-bottom: 20rpx;
-}
-
-.cell {
-  display: flex;
-  align-items: center;
-  padding: 32rpx 40rpx;
-  position: relative;
-}
-
-.cell:active {
-  background-color: #f2f2f2;
-}
-
-.cell:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  left: 112rpx;
-  bottom: 0;
-  right: 0;
-  height: 1rpx;
-  background-color: #f0f0f0;
-}
-
-.cell-icon {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 8rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 32rpx;
-  font-size: 28rpx;
-  color: #ffffff;
-  flex-shrink: 0;
-}
-
-.cell-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.cell-text {
-  font-size: 32rpx;
-  color: #111;
-  margin-bottom: 4rpx;
-}
-
-.cell-desc {
-  font-size: 26rpx;
-  color: #7f7f7f;
-}
-
-.cell-link {
-  font-size: 24rpx;
-  color: #576b95;
-  line-height: 1.6;
-  word-break: break-all;
-}
-
-/* 区块标题 */
-.section-header {
-  padding: 32rpx 40rpx 16rpx;
-}
-
-.section-title {
-  font-size: 28rpx;
-  color: #7f7f7f;
-  font-weight: 600;
-}
-
-/* 邀请记录 */
-.record-content {
-  flex: 1;
+.selector-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.record-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.record-name {
-  font-size: 32rpx;
-  color: #111;
+.selector-label,
+.link-label {
+  display: block;
+  font-size: 24rpx;
+  color: #64748b;
   margin-bottom: 8rpx;
 }
 
-.record-time {
+.selector-value,
+.empty-title,
+.section-title,
+.record-name {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.selector-arrow {
+  font-size: 40rpx;
+  color: #cbd5e1;
+}
+
+.code-box {
+  background: #eff6ff;
+  border-radius: 18rpx;
+  padding: 36rpx 24rpx;
+  text-align: center;
+  margin: 24rpx 0 16rpx;
+}
+
+.code-text {
+  font-size: 52rpx;
+  font-weight: 700;
+  color: #2563eb;
+  letter-spacing: 8rpx;
+}
+
+.link-box {
+  background: #f8fafc;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  margin-top: 24rpx;
+}
+
+.link-value {
+  display: block;
   font-size: 24rpx;
-  color: #7f7f7f;
+  color: #111111;
+  line-height: 1.7;
+  word-break: break-all;
 }
 
+.action-row {
+  display: flex;
+  gap: 16rpx;
+  margin-top: 24rpx;
+}
+
+.mini-btn {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 12rpx;
+  border: none;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 24rpx;
+}
+
+.record-empty {
+  margin-top: 24rpx;
+}
+
+.record-list {
+  margin-top: 20rpx;
+}
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #eef2f7;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-time,
 .record-status {
-  font-size: 26rpx;
-  padding: 6rpx 16rpx;
-  border-radius: 6rpx;
-}
-
-.record-status.pending {
-  background-color: #fff3e0;
-  color: #fa9d3b;
-}
-
-.record-status.accepted {
-  background-color: #e8f5e9;
-  color: #07c160;
-}
-
-.record-status.rejected {
-  background-color: #ffebee;
-  color: #fa5151;
-}
-
-/* 空状态 */
-.empty-state {
-  background-color: #ffffff;
-  padding: 120rpx 40rpx;
-  text-align: center;
-  margin-bottom: 20rpx;
-}
-
-.empty-icon {
   display: block;
-  font-size: 96rpx;
-  margin-bottom: 24rpx;
-  opacity: 0.5;
-}
-
-.empty-text {
-  display: block;
-  font-size: 32rpx;
-  color: #666;
-  margin-bottom: 12rpx;
-  font-weight: 500;
-}
-
-.empty-desc {
-  display: block;
-  font-size: 26rpx;
-  color: #999;
-}
-
-.empty-state-small {
-  background-color: #ffffff;
-  padding: 80rpx 40rpx;
-  text-align: center;
-  margin-bottom: 20rpx;
-}
-
-.empty-text-small {
-  font-size: 28rpx;
-  color: #999;
+  font-size: 24rpx;
+  color: #64748b;
+  margin-top: 8rpx;
 }
 </style>

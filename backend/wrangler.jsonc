@@ -1,0 +1,23 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "suyanjinshi-api",
+	"main": "src/index.js",
+	"compatibility_date": "2026-03-31",
+	"workers_dev": true,
+	"vars": {
+		"APP_NAME": "溯间砚时"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "suyanjinshi-db",
+			"database_id": "066373ab-5c9e-4622-9fc7-bcc883acd181"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "FILES",
+			"bucket_name": "suyanjinshi-files"
+		}
+	]
+}

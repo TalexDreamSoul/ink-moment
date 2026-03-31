@@ -1,1 +1,6 @@
 unpackage/**
+backend/node_modules/
+backend/.wrangler/
+.dev.vars
+.dev.vars.*
+.DS_Store

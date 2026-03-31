@@ -1,3 +1,4 @@
+import './utils/cloud-shim.js'
 import App from './App'
 
 // #ifndef VUE3

@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>溯间砚时管理后台</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Ink Moment Admin</p>
+          <h1>溯间砚时管理后台</h1>
+        </div>
+        <div class="topbar-actions">
+          <label class="inline-field">
+            <span>API 地址</span>
+            <input id="apiBaseUrl" type="text" placeholder="http://127.0.0.1:8787" />
+          </label>
+          <button id="saveApiBaseBtn" class="secondary">保存</button>
+          <button id="refreshAllBtn" class="secondary hidden">刷新数据</button>
+          <button id="logoutBtn" class="danger hidden">退出登录</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="panel" id="systemPanel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">System</p>
+              <h2>系统状态</h2>
+            </div>
+            <button id="reloadStatusBtn" class="secondary">刷新状态</button>
+          </div>
+          <div class="metrics" id="systemMetrics"></div>
+        </section>
+
+        <section class="panel hidden" id="bootstrapPanel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Bootstrap</p>
+              <h2>系统初始化</h2>
+            </div>
+          </div>
+          <form id="bootstrapForm" class="stack">
+            <label>
+              <span>显示名称</span>
+              <input name="displayName" type="text" value="超级管理员" required />
+            </label>
+            <label>
+              <span>登录账号</span>
+              <input name="username" type="text" value="superadmin" required />
+            </label>
+            <label>
+              <span>登录密码</span>
+              <input name="password" type="password" minlength="8" required />
+            </label>
+            <label>
+              <span>初始化密钥</span>
+              <input name="initKey" type="password" placeholder="来自 Cloudflare Secret，可选但推荐配置" />
+            </label>
+            <button type="submit">创建超级管理员</button>
+          </form>
+        </section>
+
+        <section class="panel hidden" id="loginPanel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Login</p>
+              <h2>管理员登录</h2>
+            </div>
+          </div>
+          <form id="loginForm" class="stack">
+            <label>
+              <span>用户名</span>
+              <input name="username" type="text" value="superadmin" required />
+            </label>
+            <label>
+              <span>密码</span>
+              <input name="password" type="password" required />
+            </label>
+            <button type="submit">登录后台</button>
+          </form>
+        </section>
+
+        <section class="dashboard hidden" id="dashboard">
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Overview</p>
+                <h2>总览</h2>
+              </div>
+              <div id="currentAdmin" class="badge"></div>
+            </div>
+            <div class="metrics" id="overviewMetrics"></div>
+            <div class="grid-two">
+              <div class="subpanel">
+                <h3>最近反馈</h3>
+                <div id="recentFeedback"></div>
+              </div>
+              <div class="subpanel">
+                <h3>最近导出</h3>
+                <div id="recentExports"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Organizations</p>
+                <h2>组织与成员</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>组织</th>
+                    <th>负责人</th>
+                    <th>成员数</th>
+                    <th>邀请码</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="organizationTable"></tbody>
+              </table>
+            </div>
+            <div class="subpanel hidden" id="organizationDetailPanel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Organization Detail</p>
+                  <h3 id="organizationDetailTitle">组织详情</h3>
+                </div>
+              </div>
+              <p class="detail-text" id="organizationDetailMeta"></p>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>成员</th>
+                      <th>角色</th>
+                      <th>时长</th>
+                      <th>状态</th>
+                      <th>操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="organizationMemberTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Clock Records</p>
+                <h2>打卡审核</h2>
+              </div>
+            </div>
+            <form id="clockFilterForm" class="toolbar">
+              <input name="keyword" type="text" placeholder="搜索姓名 / 学号 / 组织" />
+              <select name="auditStatus">
+                <option value="">全部审核状态</option>
+                <option value="pending">待审核</option>
+                <option value="approved">已通过</option>
+                <option value="rejected">已驳回</option>
+              </select>
+              <button type="submit" class="secondary">筛选</button>
+            </form>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>成员</th>
+                    <th>组织</th>
+                    <th>上班</th>
+                    <th>下班</th>
+                    <th>时长</th>
+                    <th>审核</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="clockRecordTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Feedback</p>
+                <h2>反馈处理</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>用户</th>
+                    <th>标题</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>时间</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody id="feedbackTable"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="grid-two">
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Notifications</p>
+                  <h2>发送通知</h2>
+                </div>
+              </div>
+              <form id="notificationForm" class="stack">
+                <label>
+                  <span>标题</span>
+                  <input name="title" type="text" required />
+                </label>
+                <label>
+                  <span>内容</span>
+                  <textarea name="content" rows="5" required></textarea>
+                </label>
+                <label>
+                  <span>目标用户 ID</span>
+                  <input name="userId" type="text" placeholder="留空表示广播给全部用户" />
+                </label>
+                <button type="submit">发送通知</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Exports</p>
+                  <h2>导出记录</h2>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>用户</th>
+                      <th>组织</th>
+                      <th>验证码</th>
+                      <th>时长</th>
+                      <th>时间</th>
+                    </tr>
+                  </thead>
+                  <tbody id="exportTable"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Notification History</p>
+                <h2>已发送通知</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>用户</th>
+                    <th>标题</th>
+                    <th>类型</th>
+                    <th>状态</th>
+                    <th>时间</th>
+                  </tr>
+                </thead>
+                <tbody id="notificationTable"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
