@@ -21,7 +21,7 @@ import {
   sortMembersByRole,
 } from "../lib/domain.js";
 import { generateId } from "../lib/crypto.js";
-import { failure, readJson, success, getBaseUrl } from "../lib/http.js";
+import { failure, getApiBaseUrl, readJson, success } from "../lib/http.js";
 import { createUploadTicket, verifyUploadTicket } from "../lib/uploads.js";
 import { NOTIFICATION_TYPE } from "../lib/constants.js";
 
@@ -50,7 +50,7 @@ async function exchangeWechatCode(env, code) {
 }
 
 function getFileUrl(request, key) {
-  return `${getBaseUrl(request)}/files/${encodeURIComponent(key)}`;
+  return `${getApiBaseUrl(request)}/files/${encodeURIComponent(key)}`;
 }
 
 function toLegacyRole(role) {
@@ -1531,7 +1531,9 @@ async function handleCreateUploadTicket(request, env) {
   return success({
     ticket: ticket.ticket,
     fileKey: ticket.key,
-    uploadUrl: `${getBaseUrl(request)}/miniapp/uploads/${encodeURIComponent(ticket.ticket)}`,
+    uploadUrl: `${getApiBaseUrl(request)}/miniapp/uploads/${encodeURIComponent(
+      ticket.ticket
+    )}`,
   });
 }
 

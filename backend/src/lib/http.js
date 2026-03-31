@@ -92,6 +92,28 @@ export function getBaseUrl(request) {
   return `${url.protocol}//${url.host}`;
 }
 
+export function getApiPrefix(request) {
+  const pathname = new URL(request.url).pathname;
+  if (pathname === "/api" || pathname.startsWith("/api/")) {
+    return "/api";
+  }
+  return "";
+}
+
+export function getApiBaseUrl(request) {
+  return `${getBaseUrl(request)}${getApiPrefix(request)}`;
+}
+
+export function stripApiPrefix(pathname = "") {
+  if (pathname === "/api") {
+    return "/";
+  }
+  if (pathname.startsWith("/api/")) {
+    return pathname.slice("/api".length) || "/";
+  }
+  return pathname;
+}
+
 export function withQuery(url, query = {}) {
   for (const [key, value] of Object.entries(query)) {
     if (value !== undefined && value !== null && value !== "") {

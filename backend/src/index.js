@@ -1,4 +1,4 @@
-import { failure, optionsResponse, success } from "./lib/http.js";
+import { failure, optionsResponse, stripApiPrefix, success } from "./lib/http.js";
 import { handleAdminRequest } from "./routes/admin.js";
 import { handleMiniappRequest } from "./routes/miniapp.js";
 
@@ -24,12 +24,22 @@ export default {
     try {
       const url = new URL(request.url);
       const pathname = url.pathname;
+      const routePathname = stripApiPrefix(pathname);
 
       if (request.method === "OPTIONS") {
         return optionsResponse();
       }
 
-      if (pathname === "/health") {
+      if (pathname === "/api" || pathname === "/api/") {
+        return success({
+          status: "ok",
+          app: env.APP_NAME || "suyanjinshi-api",
+          apiBase: `${url.protocol}//${url.host}/api`,
+          timestamp: Date.now(),
+        });
+      }
+
+      if (routePathname === "/health") {
         return success({
           status: "ok",
           app: env.APP_NAME || "suyanjinshi-api",
@@ -37,17 +47,21 @@ export default {
         });
       }
 
-      if (pathname.startsWith("/files/")) {
-        const key = decodeURIComponent(pathname.slice("/files/".length));
+      if (routePathname.startsWith("/files/")) {
+        const key = decodeURIComponent(routePathname.slice("/files/".length));
         return handleFileRequest(env, key);
       }
 
-      if (pathname.startsWith("/miniapp/")) {
-        return handleMiniappRequest(request, env, pathname);
+      if (routePathname.startsWith("/miniapp/")) {
+        return handleMiniappRequest(request, env, routePathname);
       }
 
-      if (pathname.startsWith("/admin/")) {
-        return handleAdminRequest(request, env, pathname);
+      if (routePathname.startsWith("/admin/")) {
+        return handleAdminRequest(request, env, routePathname);
+      }
+
+      if (env.ASSETS) {
+        return env.ASSETS.fetch(request);
       }
 
       return failure(`未找到接口: ${pathname}`, 404, 404);

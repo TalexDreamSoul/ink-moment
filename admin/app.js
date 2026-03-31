@@ -3,10 +3,34 @@ const STORAGE_KEYS = {
   token: "suyanjinshi_admin_token",
 };
 
+function getDefaultApiBaseUrl() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}/api`;
+  }
+  return "http://127.0.0.1:8787/api";
+}
+
+function normalizeApiBaseUrl(value) {
+  const nextValue = String(value || "").trim();
+  if (!nextValue) {
+    return getDefaultApiBaseUrl();
+  }
+
+  if (/^https?:\/\//i.test(nextValue)) {
+    return nextValue.replace(/\/+$/, "");
+  }
+
+  if (nextValue.startsWith("/") && typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}${nextValue}`.replace(/\/+$/, "");
+  }
+
+  return nextValue.replace(/\/+$/, "");
+}
+
 const state = {
-  apiBaseUrl:
-    localStorage.getItem(STORAGE_KEYS.apiBaseUrl) ||
-    "https://suyanjinshi-api.talexdreamsoul.workers.dev",
+  apiBaseUrl: normalizeApiBaseUrl(
+    localStorage.getItem(STORAGE_KEYS.apiBaseUrl) || getDefaultApiBaseUrl()
+  ),
   token: localStorage.getItem(STORAGE_KEYS.token) || "",
   systemStatus: null,
   currentAdmin: null,
@@ -80,7 +104,9 @@ async function copyText(value) {
 }
 
 function buildUrl(path, query = {}) {
-  const url = new URL(path, `${state.apiBaseUrl.replace(/\/+$/, "")}/`);
+  const baseUrl = normalizeApiBaseUrl(state.apiBaseUrl);
+  const pathname = path.startsWith("/") ? path : `/${path}`;
+  const url = new URL(`${baseUrl}${pathname}`);
   Object.entries(query).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== "") {
       url.searchParams.set(key, value);
@@ -531,8 +557,9 @@ function bindEvents() {
   $("#apiBaseUrl").value = state.apiBaseUrl;
 
   $("#saveApiBaseBtn").addEventListener("click", () => {
-    state.apiBaseUrl = $("#apiBaseUrl").value.trim() || state.apiBaseUrl;
+    state.apiBaseUrl = normalizeApiBaseUrl($("#apiBaseUrl").value);
     localStorage.setItem(STORAGE_KEYS.apiBaseUrl, state.apiBaseUrl);
+    $("#apiBaseUrl").value = state.apiBaseUrl;
     showToast("API 地址已保存");
   });
 
