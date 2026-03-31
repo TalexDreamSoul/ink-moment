@@ -3,8 +3,8 @@ const STORAGE_KEYS = {
   adminBaseUrl: "app_admin_base_url",
 };
 
-const DEFAULT_API_BASE_URL = "http://127.0.0.1:8787";
-const DEFAULT_ADMIN_BASE_URL = "http://127.0.0.1:4173";
+const DEFAULT_API_BASE_URL = "https://suyanjinshi-api.talexdreamsoul.workers.dev";
+const DEFAULT_ADMIN_BASE_URL = "https://suyanjinshi-admin.pages.dev";
 
 function safeGetStorage(key) {
   try {
