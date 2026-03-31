@@ -1,5 +1,6 @@
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+const PBKDF2_ITERATIONS = 100000;
 
 function bytesToBase64Url(bytes) {
   const binary = String.fromCharCode(...bytes);
@@ -123,7 +124,7 @@ export async function hashPassword(password, saltHex) {
     {
       name: "PBKDF2",
       salt,
-      iterations: 120000,
+      iterations: PBKDF2_ITERATIONS,
       hash: "SHA-256",
     },
     keyMaterial,
